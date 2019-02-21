@@ -3,13 +3,14 @@
 """
 Created on Mon Jan 14 00:30:02 2019
 
-@author: ziatdinovmax
+@author: Maxim Ziatdinov
 """
 
 import h5py
 import json
 
 def open_hdf(filepath):
+    '''Opens a custom hdf5 file with STEM image and reads the key metadata'''
     with h5py.File(filepath, 'r') as f:
         image_data = f['image_data'][:]
         metadata = json.loads(f['metadata'][()])

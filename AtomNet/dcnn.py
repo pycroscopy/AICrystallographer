@@ -21,15 +21,24 @@ def load_torchmodel(weights_path, model):
     return model
     
 class conv2dblock(nn.Module):
-    '''Creates a block consisting of convolutional
-       layer, leaky relu and (optionally) dropout 
-       and batch normalization '''
     
     def __init__(self, input_channels, output_channels,
                  kernel_size = 3, stride = 1, padding = 1,
                  use_batchnorm = False, lrelu_a = 0.01,
                  dropout_ = 0):
-        '''Instantiates parameters of this block''' 
+        '''Creates a block consisting of convolutional
+        layer, leaky relu and (optionally) dropout 
+        and batch normalization 
+        Args:
+            input_channels: number of channels in the previous/input layer
+            output_channels: number of the output channels for the present layer
+            kernel_size: size (in pixels) of convolutional filter
+            stride: value of convolutional filter stride
+            padding: value of padding at the edges
+            use_batchnorm: usage of batch normalization (default: False)
+            lrelu_a: value of alpha parameter in leaky/paramteric RelU activation function(default: 0.01)
+            dropout_: value of dropout
+        ''' 
         super(conv2dblock, self).__init__()
 
         block = [] 
@@ -50,7 +59,7 @@ class conv2dblock(nn.Module):
 
         
     def forward(self, x):
-        '''Forward path for this block'''
+        '''Forward path'''
         
         output = self.block(x)
               
@@ -58,15 +67,24 @@ class conv2dblock(nn.Module):
     
 
 class dilation_block(nn.Module):
-    '''Creates a block with dilated convolutional 
-       layers (aka atrous convolutions)'''
     
     def __init__(self, input_channels, output_channels,
                  dilation_values, padding_values,
                  kernel_size = 3, stride = 1, lrelu_a = 0.01,
                  use_batchnorm = False, dropout_ = 0):
-        '''Instantiates parameters of this block'''
-        
+        '''Creates a block with dilated convolutional 
+           layers (aka atrous convolutions)
+        Args:
+            input_channels: number of channels in the previous/input layer
+            output_channels: number of the output channels for the present layer
+            dilation_values: list of dilation rates for convolution operation
+            kernel_size: size (in pixels) of convolutional filter
+            stride: value of convolutional filter stride
+            padding: value of padding at the edges
+            use_batchnorm: usage of batch normalization (default: False)
+            lrelu_a: value of alpha parameter in leaky/paramteric RelU activation function(default: 0.01)
+            dropout_: value of dropout
+            '''
         super(dilation_block, self).__init__()        
         atrous_module = []
         for idx, (dil, pad) in enumerate(zip(dilation_values, padding_values)):
@@ -89,7 +107,7 @@ class dilation_block(nn.Module):
         self.atrous_module = nn.Sequential(*atrous_module)
 
     def forward(self, x):
-        '''Forward path for this block'''
+        '''Forward path'''
         
         atrous_layers = []
         for conv_layer in self.atrous_module:
@@ -100,34 +118,34 @@ class dilation_block(nn.Module):
         
 
 class upsample_block(nn.Module):
-    '''Defines upsampling block.
-       Upsampling can be performed either with
-       bilinear interpolation followed by 1-by-1
-       convolution or with a transposed convolution'''
     
     def __init__(self, input_channels, output_channels,
                 mode = 'interpolate', kernel_size = 1,
                 stride = 1, padding = 0):
-        '''Initiates parameters of this block'''       
-        super(upsample_block, self).__init__()
-                
+        '''Defines upsampling block performed either with
+           bilinear interpolation followed by 1-by-1
+           convolution or with a transposed convolution
+        Args:
+            input_channels: number of channels in the previous/input layer
+            output_channels: number of the output channels for the present layer
+            mode: upsampling mode (default: 'interpolate')
+            kernel_size: size (in pixels) of convolutional filter
+            stride: value of convolutional filter stride
+            padding: value of padding at the edges
+            '''       
+        super(upsample_block, self).__init__()       
         self.mode = mode
-       
         self.conv = nn.Conv2d(
             input_channels, output_channels, 
             kernel_size = kernel_size,
             stride = stride, padding = padding)
-        
         self.conv_t = nn.ConvTranspose2d(
             input_channels, output_channels,
             kernel_size=2, stride=2, padding = 0)
    
     def forward(self, x):
         '''Defines a forward path'''
-        
-        
         if self.mode == 'interpolate':
-        
             x = F.interpolate(
                 x, scale_factor = 2,
                 mode = 'bilinear', align_corners=False)
@@ -136,46 +154,49 @@ class upsample_block(nn.Module):
 
         return self.conv_t(x)
 
+
+
 class atomsegnet(nn.Module):
-    '''Builds  a fully convolutional
-       neural network model'''
     
-    def __init__(self):
-        super(atomsegnet, self).__init__()
-        '''Initiates model parameters'''  
+    def __init__(self, nb_filters = 32):
+        '''Builds  a fully convolutional neural network model
+        Args:
+            nb_filters: number of filters in the first convolutional layer
+        '''
+        super(atomsegnet, self).__init__()  
         
-        self.c1 = conv2dblock(1, 32)
+        self.c1 = conv2dblock(1, nb_filters)
         
-        self.c2 = nn.Sequential(conv2dblock(32, 64),
-                                conv2dblock(64, 64))
+        self.c2 = nn.Sequential(conv2dblock(nb_filters, nb_filters*2),
+                                conv2dblock(nb_filters*2, nb_filters*2))
         
-        self.c3 = nn.Sequential(conv2dblock(64, 128,
+        self.c3 = nn.Sequential(conv2dblock(nb_filters*2, nb_filters*4,
                                 dropout_ = 0.3),
-                                conv2dblock(128, 128,
+                                conv2dblock(nb_filters*4, nb_filters*4,
                                 dropout_ = 0.3))
         
-        self.bn = dilation_block(128, 256,
+        self.bn = dilation_block(nb_filters*4, nb_filters*8,
                                  dilation_values = [2, 4, 6],
                                  padding_values = [2, 4, 6],
                                  dropout_ = 0.5)
         
-        self.upsample_block1 = upsample_block(256, 128)
+        self.upsample_block1 = upsample_block(nb_filters*8, nb_filters*4)
         
-        self.c4 = nn.Sequential(conv2dblock(128+128, 128,
+        self.c4 = nn.Sequential(conv2dblock(nb_filters*8, nb_filters*4,
                                 dropout_ = 0.3),
-                                conv2dblock(128, 128,
+                                conv2dblock(nb_filters*4, nb_filters*4,
                                 dropout_ = 0.3))
         
-        self.upsample_block2 = upsample_block(128, 64)
+        self.upsample_block2 = upsample_block(nb_filters*4, nb_filters*2)
         
-        self.c5 = nn.Sequential(conv2dblock(64+64, 64),
-                                conv2dblock(64, 64))
+        self.c5 = nn.Sequential(conv2dblock(nb_filters*4, nb_filters*2),
+                                conv2dblock(nb_filters*2, nb_filters*2))
         
-        self.upsample_block3 = upsample_block(64, 32)
+        self.upsample_block3 = upsample_block(nb_filters*2, nb_filters)
         
-        self.c6 = conv2dblock(32+32, 32)
+        self.c6 = conv2dblock(nb_filters*2, nb_filters)
         
-        self.px = nn.Conv2d(32, 1, kernel_size = 1,
+        self.px = nn.Conv2d(nb_filters, 1, kernel_size = 1,
                             stride = 1, padding = 0)
                
                                 

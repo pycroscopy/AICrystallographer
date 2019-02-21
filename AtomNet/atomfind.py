@@ -14,14 +14,21 @@ from scipy import ndimage
 
 
 class dl_image:
-    '''Image decoder with a trained neural network'''
     
     def __init__(self, image_data, model, *args, nb_classes = 3,
                  max_pool_n = 3, norm = 1, use_gpu = False,
                  histogram_equalization = False):
-        '''Initialize a decoder'''
-        
-        # Input data must be either an image stack or a single image (all greyscale)
+        '''Image decoder with a trained neural network
+        Args:
+            image_data: input image as ndarray, must be an image stack or a single image (all greyscale)
+            model: trained pytorch model
+            nb_classes: number of classes in the model
+            max_pool_n: number of max-pooling layers in the model
+            norm: image normalization to 1
+            use_gpu: optional use of gpu device for inference
+            histogram_equalization: Equilazes image histogram
+            args: tuple with image width and heigh for resizing operation
+        '''
         if image_data.ndim == 2:
             image_data = np.expand_dims(image_data, axis = 0)
         self.image_data = image_data  
@@ -38,8 +45,7 @@ class dl_image:
         
     
     def img_resize(self):
-        '''Image resizing (optional)'''
-             
+        '''Image resizing (optional)'''      
         if self.image_data.shape[1:3] == self.rs:
             return self.image_data.copy()
             
@@ -53,8 +59,7 @@ class dl_image:
     def img_pad(self, *args):
         '''Pads the image if its size (w, h)
         is not divisible by 2**n, where n is a number
-        of max-pooling layers in a network'''
-        
+        of max-pooling layers in a network'''  
         try:
             image_data_p = args[0]
         except IndexError:
@@ -76,7 +81,6 @@ class dl_image:
 
     def hist_equalize(self, *args, number_bins=5):
         '''Histogram equalization (optional)'''
-
         try:
             image_data_ = args[0]
         except IndexError:
@@ -99,8 +103,7 @@ class dl_image:
 
     def torch_format(self, image_data_):
         '''Reshapes and normalizes (optionally) image data
-        to make it compatible with pytorch format'''
-            
+        to make it compatible with pytorch format'''    
         image_data_ = np.expand_dims(image_data_, axis = 1)
         if self.norm != 0:
             image_data_ = (image_data_ - np.amin(image_data_))/np.ptp(image_data_)      
@@ -112,7 +115,6 @@ class dl_image:
     def predict(self, images):
         '''Returns probability of each pixel
            in image belonging to an atom'''
-
         if self.use_gpu:
             self.model.cuda()
             images = images.cuda()
@@ -122,6 +124,7 @@ class dl_image:
         if self.use_gpu:
             self.model.cpu() 
             images = images.cpu()
+            prob = prob.cpu()
         prob = prob.permute(0,2,3,1) # reshape with channel=last as in tf/keras
         prob = prob.numpy()
 
@@ -130,7 +133,6 @@ class dl_image:
     
     def decode(self):
         '''Make prediction'''
-
         image_data_ = self.img_resize()
         if self.hist_equ:
             image_data_ = self.hist_equalize(image_data_)
@@ -149,10 +151,14 @@ class dl_image:
     
     
 class find_atoms:
-    '''Transforms pixel data from decoded images
-    into  a structure 'file' of atoms coordinates'''
     
     def __init__(self, decoded_imgs, threshold = 0.5, verbose = 1):
+        '''Transforms pixel data from decoded images
+        into  a structure 'file' of atoms coordinates
+        Args:
+            decoded_imgs: the output of a neural network (softmax/sigmoid layer)
+            threshold: value at which the neural network output is thresholded
+            '''
         if decoded_imgs.shape[-1] == 1:
             decoded_imgs_b = 1 - decoded_imgs
             decoded_imgs = np.concatenate((decoded_imgs[:,:,:,None],
@@ -161,16 +167,13 @@ class find_atoms:
         self.decoded_imgs = decoded_imgs
         self.threshold = threshold
         self.verbose = verbose
-        
-               
+                       
     def get_all_coordinates(self, dist_edge = 5):
         '''Extract all atomic coordinates in image
         via CoM method & store data as a dictionary
         (key: frame number)'''
-        
         def find_com(image_data):
             '''Find atoms via center of mass methods'''
-
             labels, nlabels = ndimage.label(image_data)
             coordinates = np.array(ndimage.center_of_mass(image_data, labels, np.arange(nlabels)+1))
             coordinates = coordinates.reshape(coordinates.shape[0], 2)
@@ -218,5 +221,5 @@ class find_atoms:
         coord_to_rem = [idx for idx, c in enumerate(coordinates) if any(coord_edges(c, w, h, dist_edge))]
         coord_to_rem = np.array(coord_to_rem, dtype = int)
         coordinates = np.delete(coordinates, coord_to_rem, axis = 0)
-        
+    
         return coordinates
