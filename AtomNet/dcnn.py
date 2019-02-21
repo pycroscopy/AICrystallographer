@@ -36,7 +36,7 @@ class conv2dblock(nn.Module):
             stride: value of convolutional filter stride
             padding: value of padding at the edges
             use_batchnorm: usage of batch normalization (default: False)
-            lrelu_a: value of alpha parameter in leaky/paramteric RelU activation function(default: 0.01)
+            lrelu_a: value of alpha parameter in leaky/paramteric ReLU activation function(default: 0.01)
             dropout_: value of dropout
         ''' 
         super(conv2dblock, self).__init__()
