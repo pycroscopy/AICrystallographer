@@ -192,7 +192,7 @@ class ferronet(nn.Module):
                               nb_filters)
         
         self.px = nn.Conv2d(nb_filters,
-                            1,
+                            nb_classes,
                             kernel_size=1,
                             stride=1,
                             padding=0)
