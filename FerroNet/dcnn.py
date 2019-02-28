@@ -139,14 +139,14 @@ class upsample_block(nn.Module):
 
 
 
-class atomsegnet(nn.Module):
+class ferronet(nn.Module):
     
     def __init__(self, nb_classes, nb_filters=16):
         '''Builds  a fully convolutional neural network model
         Args:
             nb_filters: number of filters in the first convolutional layer
         '''
-        super(atomsegnet, self).__init__()
+        super(ferronet, self).__init__()
         self.c1 = conv2dblock(1, nb_filters)
         
         self.c2 = nn.Sequential(conv2dblock(nb_filters,
