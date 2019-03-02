@@ -1,0 +1,3 @@
+Collection of tutorial-style notebooks in Google Colaboratory describing construction and training of deep neual networks. To run a notebook click on 'Open in Colab' icon. It will then open it in Google Colaboratory, which is a Jupyter notebook environment for machine learning research that requires no setup to use. Just open it and start executing a notebook (or perhaps use it as a starting point to develop a much better network!).
+
+P.S. More notebooks to come soon :)
