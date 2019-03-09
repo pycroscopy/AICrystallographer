@@ -14,5 +14,5 @@ elif test "$1" = "dataset"; then
     echo "Downloading training set -->\n"
     gdown https://drive.google.com/uc?id=10wo3fWl6lbD0p7S_gJ241BKJ05v6KL2U
 else 
-  echo "No match found. Use <module> for installation of additional python libraries or <dataset> to download  a training set"
+    echo "No match found. Use <module> for installation of additional python libraries or <dataset> to download  a training set"
 fi
