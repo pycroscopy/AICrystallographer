@@ -1,1 +1,2 @@
+# DefectNet
 Complete workflow for locating atomic defects in electron microscopy movies using only a single movie frame for generation of a training set. See notebook DefectSniffer.ipynb, which should be opened and executed in Google Colab. The augmentation procedure introduced here should be applicable to other types of data (including manually labeled image-groundtruth pairs).
