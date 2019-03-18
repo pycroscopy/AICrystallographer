@@ -14,11 +14,13 @@ from scipy import ndimage
 
 
 class dl_image:
-    
+    '''
+    Image decoder with a trained neural network
+    '''
     def __init__(self, image_data, model, *args, nb_classes=3,
                  max_pool_n=3, norm=1, use_gpu=False,
                  histogram_equalization=False):
-        '''Image decoder with a trained neural network
+        '''
         Args:
             image_data (ndarray): image stack or a single image (all greyscale)
             model: trained pytorch model
@@ -142,10 +144,12 @@ class dl_image:
 
 
 class find_atoms:
-    
+    '''
+    Transforms pixel data from decoded images
+    into  a structure 'file' of atoms coordinates
+    '''
     def __init__(self, decoded_imgs, threshold = 0.5, verbose = 1):
-        '''Transforms pixel data from decoded images
-        into  a structure 'file' of atoms coordinates
+        '''
         Args:
             decoded_imgs: the output of a neural network (softmax/sigmoid layer)
             threshold: value at which the neural network output is thresholded
