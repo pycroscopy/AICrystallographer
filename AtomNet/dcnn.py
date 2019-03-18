@@ -21,13 +21,16 @@ def load_torchmodel(weights_path, model):
     return model
     
 class conv2dblock(nn.Module):
+    '''
+    Creates a block consisting of convolutional
+    layer, leaky relu and (optionally) dropout and
+    batch normalization
+    '''
     def __init__(self, input_channels, output_channels,
                  kernel_size=3, stride=1, padding=1,
                  use_batchnorm=False, lrelu_a=0.01,
                  dropout_=0):
-        '''Creates a block consisting of convolutional
-        layer, leaky relu and (optionally) dropout and
-        batch normalization
+        '''
         Args:
             input_channels: number of channels in the previous/input layer
             output_channels: number of the output channels for the present layer
@@ -58,13 +61,15 @@ class conv2dblock(nn.Module):
         return output
 
 class dilation_block(nn.Module):
-    
+    '''
+    Creates a block with dilated convolutional
+    layers (aka atrous convolutions)
+    '''
     def __init__(self, input_channels, output_channels,
                  dilation_values, padding_values,
                  kernel_size=3, stride=1, lrelu_a=0.01,
                  use_batchnorm=False, dropout_=0):
-        '''Creates a block with dilated convolutional
-           layers (aka atrous convolutions)
+        '''
         Args:
             input_channels: number of channels in the previous/input layer
             output_channels: number of the output channels for the present layer
@@ -103,13 +108,15 @@ class dilation_block(nn.Module):
         return torch.sum(torch.cat(atrous_layers, dim=-1), dim=-1)
 
 class upsample_block(nn.Module):
-    
+    '''
+    Defines upsampling block performed either with
+    bilinear interpolation followed by 1-by-1
+    convolution or with a transposed convolution
+    '''
     def __init__(self, input_channels, output_channels,
                  mode='interpolate', kernel_size=1,
                  stride=1, padding=0):
-        '''Defines upsampling block performed either with
-           bilinear interpolation followed by 1-by-1
-           convolution or with a transposed convolution
+        '''
         Args:
             input_channels: number of channels in the previous/input layer
             output_channels: number of the output channels for the present layer
@@ -140,9 +147,11 @@ class upsample_block(nn.Module):
 
 
 class atomsegnet(nn.Module):
-    
+    '''
+    Builds  a fully convolutional neural network model
+    '''
     def __init__(self, nb_filters=32):
-        '''Builds  a fully convolutional neural network model
+        '''
         Args:
             nb_filters: number of filters in the first convolutional layer
         '''
