@@ -25,7 +25,7 @@ class Sniffer(nn.Module):
     """
     Convolutional neural network with an 'encoder-decoder' architecture
     """
-    def __init__(self, nb_filters_en=16, lrelu_a=0, with_logits=False):
+    def __init__(self, input_channels=16, lrelu_a=0, with_logits=False):
         """
         Args:
             nb_filters_en (int): number of filters in the 1st layer of encoder
@@ -36,9 +36,9 @@ class Sniffer(nn.Module):
         """
         super(Sniffer, self).__init__()
         self.with_logits = with_logits
-        self.encoder = ConvEncoder(nb_filters=nb_filters_en, lrelu_a=lrelu_a)
-        self.decoder = ConvDecoder(nb_filters=nb_filters_en*2, lrelu_a=lrelu_a)
-        self.last_layer = nn.Conv2d(nb_filters_en, 1, kernel_size=3,
+        self.encoder = ConvEncoder(nb_filters=input_channels, lrelu_a=lrelu_a)
+        self.decoder = ConvDecoder(nb_filters=input_channels*2, lrelu_a=lrelu_a)
+        self.last_layer = nn.Conv2d(input_channels, 1, kernel_size=3,
                                     stride=1, padding=1)
 
     def forward(self, x):
