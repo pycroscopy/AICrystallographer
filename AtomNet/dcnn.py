@@ -150,12 +150,13 @@ class atomsegnet(nn.Module):
     '''
     Builds  a fully convolutional neural network model
     '''
-    def __init__(self, nb_filters=32):
+    def __init__(self, nb_classes=1, nb_filters=32):
         '''
         Args:
             nb_filters: number of filters in the first convolutional layer
         '''
         super(atomsegnet, self).__init__()
+        self.pxac = 'sigmoid' if nb_classes < 2 else 'softmax'
         self.c1 = conv2dblock(1, nb_filters)
         
         self.c2 = nn.Sequential(conv2dblock(nb_filters,
@@ -201,7 +202,7 @@ class atomsegnet(nn.Module):
                               nb_filters)
         
         self.px = nn.Conv2d(nb_filters,
-                            1,
+                            nb_classes,
                             kernel_size=1,
                             stride=1,
                             padding=0)
@@ -229,5 +230,8 @@ class atomsegnet(nn.Module):
         u1 = self.c6(u1)
         # pixel-wise classification
         px = self.px(u1)
-        output = torch.sigmoid(px)
+        if self.pxac == 'sigmoid':
+            output = torch.sigmoid(px)
+        elif self.pxac == 'softmax':
+            output = F.log_softmax(px, dim=1)
         return output
