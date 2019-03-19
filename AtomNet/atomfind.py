@@ -17,7 +17,7 @@ class dl_image:
     '''
     Image decoder with a trained neural network
     '''
-    def __init__(self, image_data, model, *args, nb_classes=3,
+    def __init__(self, image_data, model, *args, nb_classes=1,
                  max_pool_n=3, norm=1, use_gpu=False,
                  histogram_equalization=False):
         '''
@@ -117,6 +117,8 @@ class dl_image:
         self.model.eval()
         with torch.no_grad():
             prob = self.model.forward(images)
+            if self.nb_classes > 1:
+                prob = torch.exp(prob)
         if self.use_gpu:
             self.model.cpu()
             images = images.cpu()
