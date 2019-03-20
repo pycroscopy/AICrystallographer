@@ -5,4 +5,4 @@ Complete workflow for locating atomic defects in electron microscopy movies usin
   <img src="https://github.com/pycroscopy/AICrystallographer/blob/master/DefectNet/DefectNet.jpg" width="75%" title="DefectNet">
 <p align="justify">
 <br><br>
-Currently it accepts inputs in the form of 3D numpy arrays (stack of images). We plan to incorporate Pycroscopy translators in the near future to make it posssible working directly with .dm3 and other popular file formats.
+We believe that this particular approach can help extracting information on the point defects evolution from the long electron microscopy movies (more than 1000 frames) from different materials. Currently it accepts inputs in the form of 3D numpy arrays (stack of images). We plan to incorporate Pycroscopy translators in the near future to make it posssible working directly with .dm3 and other popular file formats.
