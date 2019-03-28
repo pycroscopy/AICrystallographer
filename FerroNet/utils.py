@@ -138,7 +138,7 @@ def estimate_nnd(com1, com2, icut=500):
     '''Description TBA'''
     d0 = []
     for i, c in enumerate(com1):
-        distance = spatial.KDTree(com2).query(c)[0]
+        distance = spatial.cKDTree(com2).query(c)[0]
         d0.append(distance)
         if i > icut:
             break
