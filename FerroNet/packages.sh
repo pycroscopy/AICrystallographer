@@ -1,6 +1,6 @@
 #!/bin/bash
 
-function colabdevice {
+colabdevice() {
 python - <<END
 import torch
 device_count = torch.cuda.device_count()
