@@ -26,7 +26,7 @@ if test "$1" = "modules"; then
         echo "\n\nDownloading and installing PyTorch -->\n"
         pip install https://download.pytorch.org/whl/cu90/torch-1.0.0-cp36-cp36m-linux_x86_64.whl    
     else
-        echo "Found existing installation of PyTorch"
+        echo "\n\nFound existing installation of PyTorch"
         pip show torch | grep Version
     fi
     echo "\n\nChecking if PyTorch sees Colab GPU device..."
