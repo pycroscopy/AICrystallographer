@@ -253,4 +253,4 @@ def construct_graphs(img, img_size, coord, atoms, approx_max_bonds,
                 if 'defect_coord_{}'.format(i) not in f.keys():
                     f.create_dataset('defect_coord_{}'.format(i),
                                      data=np.string_(defect_coord, encoding="utf-8"))
-            print('Saved file with defect coordinates to disk')
+            print('Saved file with defect coordinates to disk\n')
