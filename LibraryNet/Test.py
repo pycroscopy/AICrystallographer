@@ -39,5 +39,5 @@ for _ax in fig.axes:
     _ax.axis('off')
 plt.show(block=False)
  # create and plot graphs
-graphs.construct_graphs(img, img_size, coord, atoms, approx_max_bonds, image_file)
+graphs.construct_graphs(img, img_size, coord[0], atoms, approx_max_bonds, image_file)
 plt.show()
