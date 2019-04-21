@@ -223,7 +223,7 @@ def get_bond_lengths(sg, dopant, img_size, exp_img):
         for p2 in sg.neighbors(p1):
             sc = img_size/exp_img.shape[1]
             bond_length = np.append(bond_length, dist(sg, sg, p1, p2)*sc)
-    return bond_length
+    return np.unique(bond_length)
 
 def construct_graphs(img, img_size, coord, atoms, approx_max_bonds,
                      *args, raw_data=True, save_all=False, plot_result=True):
