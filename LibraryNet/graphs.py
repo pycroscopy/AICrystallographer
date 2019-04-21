@@ -172,7 +172,7 @@ def plot_graph(Graph, atomic_species, pos, exp_img, img_size,
     elif atomic_labels == False:
         nx.draw_networkx_labels(Graph, pos,font_size=c_fonts/2)
     plt.show(block=False)
- 
+    
 def get_subgraphs(U):
     """
     Finds individual defects after graph refinement procedure
@@ -209,6 +209,7 @@ def get_angles(sg, dopant):
     for p1 in [node for node in sg.nodes() if node.split()[0] == dopant]:
         for atuple in list(set(tuple(sorted(a)) for a in itertools.product(sg.neighbors(p1), repeat = 2))):
             if atuple[0] != atuple[1]:
+                points = [atuple[0], p1, atuple[1]]
                 u = np.array(sg.node[points[1]]['pos']) - np.array(sg.node[points[0]]['pos'])
                 v = np.array(sg.node[points[1]]['pos']) - np.array(sg.node[points[2]]['pos'])
                 a = np.dot(u, v)
