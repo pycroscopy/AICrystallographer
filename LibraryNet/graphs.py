@@ -126,15 +126,15 @@ def refine_structure(U, *args, **kwargs):
     U.remove_nodes_from(remove_lone_atoms)
     print('Refinement procedure based on the maximum coordination number has been completed')
 
-def plot_graph(Graph, atomic_species, n_nodes, pos, exp_img, img_size,
-               atomic_labels=True, overlay=False):
+def plot_graph(Graph, atomic_species, pos, exp_img, img_size,
+               atomic_labels=True, overlay=False, **kwargs):
     """
     Plots experimental image and lattice graph
     More details TBA
     """
+    c_nodes = kwargs.get('node_size') if kwargs.get('node_size') is not None else 200
+    c_fonts = kwargs.get('font_size') if kwargs.get('font_size') is not None else c_nodes/15
     exp_img = exp_img[0, :, :, 0]
-    c_nodes = 5.*(img_size/n_nodes)
-    c_fonts = 0.5*(img_size/n_nodes)
     color_map = []
     colors = ['orange', 'red', 'blue', 'black', 'magenta', 'gray', 'green']
     for node in Graph.nodes():
@@ -172,7 +172,7 @@ def plot_graph(Graph, atomic_species, n_nodes, pos, exp_img, img_size,
     elif atomic_labels == False:
         nx.draw_networkx_labels(Graph, pos,font_size=c_fonts/2)
     plt.show(block=False)
-    
+ 
 def get_subgraphs(U):
     """
     Finds individual defects after graph refinement procedure
@@ -204,14 +204,38 @@ def get_defect_coord(sg):
     defect_com = [mean_x, mean_y]
     return defect_com, defect_atom_coord
 
+def get_angles(sg, dopant):
+    angles = np.array([])
+    for p1 in [node for node in sg.nodes() if node.split()[0] == dopant]:
+        for atuple in list(set(tuple(sorted(a)) for a in itertools.product(sg.neighbors(p1), repeat = 2))):
+            if atuple[0] != atuple[1]:
+                u = np.array(sg.node[points[1]]['pos']) - np.array(sg.node[points[0]]['pos'])
+                v = np.array(sg.node[points[1]]['pos']) - np.array(sg.node[points[2]]['pos'])
+                a = np.dot(u, v)
+                b = np.linalg.norm(u) * np.linalg.norm(v)
+                angles = np.append(angles, np.arccos(a/b) * 180 / np.pi)
+    return angles
+
+def get_bond_lengths(sg, dopant, img_size, exp_img):
+    bond_length = np.array([])
+    for p1 in [node for node in sg.nodes() if node.split()[0] == dopant]:
+        for p2 in sg.neighbors(p1):
+            sc = img_size/exp_img.shape[1]
+            bond_length = np.append(bond_length, dist(sg, sg, p1, p2)*sc)
+    return bond_length
+
 def construct_graphs(img, img_size, coord, atoms, approx_max_bonds,
-                     imgfile, save_all=False, plot_result=True):
+                     *args, raw_data=True, save_all=False, plot_result=True):
     """
     Constructs graphs, plots them and saves defect coordinates with the image
     More details TBA
     """
+    try:
+        imgfile = args[0]
+    except IndexError:
+        imgfile = None
     target_size = img.shape[1:3]
-    df = to_dataframe(coord[0], atoms)
+    df = to_dataframe(coord, atoms)
     U, n_nodes, pos, atomic_species = make_graph_nodes(df)
     atomic_pairs_d, image_size=atomic_pairs_data(
         atomic_species, target_size, approx_max_bonds, image_size=img_size)
@@ -219,7 +243,7 @@ def construct_graphs(img, img_size, coord, atoms, approx_max_bonds,
     refine_structure(U, atoms, max_coord=4)
     if plot_result:
         plot_graph(
-            U, atomic_species, n_nodes, pos, img,
+            U, atomic_species, pos, img,
             img_size, atomic_labels=True, overlay=True
         )
     sub_graphs = get_subgraphs(U)
@@ -235,6 +259,10 @@ def construct_graphs(img, img_size, coord, atoms, approx_max_bonds,
         print('Defect {}:\n'.format(i+1),
               'Defect formula:', defect_formula,
               'Defect position:', defect_position)
+        if not raw_data and i+1 < len(list(sub_graphs)):
+            continue
+        if not raw_data:
+            return sub_graphs
         if save_all:
             save_option = 'Y'
         else:
@@ -245,6 +273,8 @@ def construct_graphs(img, img_size, coord, atoms, approx_max_bonds,
             if not os.path.exists(_filepath):
                     os.makedirs(_filepath)
             # save hdf5 file with original and decoded data
+            if imgfile is None:
+                imgfile = input(('Please enter a name for hdf5 file to be stored on a disk'))
             _filename = os.path.splitext(imgfile)[0].split('/')[-1]+'.hdf5'
             with h5py.File(os.path.join(_filepath, _filename), 'a') as f:
                 if 'nn_input' not in f.keys():
