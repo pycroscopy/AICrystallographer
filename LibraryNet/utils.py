@@ -28,8 +28,12 @@ def open_hdf(filepath):
         print("Type of experiment:", metadata["type of data"])
     return image_data, metadata
 
-def open_library_hdf(filepath):
+def open_library_hdf(filepath, *args):
     '''Opens an hdf5 file with experimental image and defect coordinates'''
+    try:
+        atoms = args[0]
+    except IndexError:
+        atoms = None
     with h5py.File(filepath, 'r') as f:
         image_data = f['nn_input'][:]
         scan_size = f['nn_input'].attrs['scan size']
@@ -39,6 +43,16 @@ def open_library_hdf(filepath):
                 coordinates = f[k].value
                 coordinates = np.array(coordinates, dtype = 'U32')
                 coordinates_all = np.append(coordinates_all, coordinates, axis=0)
+    if atoms is not None:
+        atomlist = coordinates_all[:, -1]
+        xy = np.array(coordinates_all[:, :2], dtype=np.float)
+        xy[:,[0, 1]] = xy[:,[1, 0]]
+        atomlist[atomlist==atoms['lattice_atom']] = 0
+        atomlist[atomlist==atoms['dopant']] = 1
+        atomlist = np.array(atomlist, dtype=np.float)
+        coordinates_all = np.concatenate((xy, atomlist[:, None]), axis=1)
+        sort_idx = np.argsort(coordinates_all[:,-1])
+        coordinates_all = coordinates_all[sort_idx]
     return image_data, scan_size, coordinates_all
 
 def optimize_image_size(image_data, scan_size, px2ang=0.128, divisible_by=8):
