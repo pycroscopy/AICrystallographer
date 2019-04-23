@@ -15,7 +15,7 @@ class dl_image:
     Image decoder with a trained neural network
     '''
     def __init__(self, image_data, model, *args, nb_classes=1,
-                 max_pool_n=3, norm=1, use_gpu=False,
+                 max_pool_n=3, norm=1, use_gpu=True,
                  histogram_equalization=False):
         '''
         Args:
