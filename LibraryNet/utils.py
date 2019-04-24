@@ -85,3 +85,39 @@ def atom_bond_dict(atom1='C', atom2='Si',
                         (bond12[0], bond12[1]): bond12[2],
                         (bond22[0], bond22[1]): bond12[2]}
     return atoms, approx_max_bonds
+
+def strainfunction(molecule_coord1, molecule_coord2, nnd_max=2):
+    '''@Author: Xin Li CNMS/ORNL'''
+    ##############
+    # given points_ref and points_tar
+    # estimator strain
+    # Input: points_ref, points_target
+    # Return:
+    # F_est
+    # t_est: translation vector
+    # E_est: strain tensor
+    # R_est: rotation matrix
+    #############
+    if len(molecule_coord1) != len(molecule_coord2):
+        print('The defect structure is likely broken due to large strain',\
+              'or you need to check a search radius')
+        return
+    points_ref = molecule_coord1.T
+    points_tar = molecule_coord2.T
+    n_points = points_tar.shape[1]
+    y = points_tar.T.reshape(1,2*n_points).T
+    M = np.zeros((2*n_points,6))
+    for i in range(n_points):
+        M[2*i:2*(i+1),:]=np.array(
+            [[1,0,points_ref[0,i],points_ref[1,i],0,0],[0,1,0,0,points_ref[0,i],points_ref[1,i]]])
+    x = np.linalg.pinv(M)@y
+    t_est = x[0:2]
+    F_est = x[2:].reshape(2,2)
+    w,v = LA.eig(F_est.T@F_est)
+    E_est = v.T@np.array([[np.sqrt(w[0]),0],[0,np.sqrt(w[1])]])@v
+    R_est = F_est@np.linalg.inv(E_est)
+    out = OrderedDict()
+    out['translational vector'] = t_est
+    out['strain_tensor'] = E_est
+    out['rotation_matrix'] = R_est
+    return out
