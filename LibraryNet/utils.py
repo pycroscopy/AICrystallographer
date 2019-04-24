@@ -7,6 +7,7 @@
 import h5py
 import json
 import numpy as np
+import numpy.linalg as LA
 import cv2
 from collections import OrderedDict
 
