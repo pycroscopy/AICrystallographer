@@ -1,3 +1,3 @@
-<h1>LibraryNet</h1>
-<p align="justify">
-Details TBA
+# LibraryNet
+  Workflow based on a combination of deep neural network and simple analysis of lattice graph structures for creating a library of Si point defects in graphene. This analysis should also work for other systems (but will require a different training set for a neural network) with a known impurity atom in a host lattice, which can have different configurations, for example, it can form dimers, trimers and tetramers and each impurity atom in a defect complex may have different number of bonds to the nearby host lattice atoms. The workflow is based on our paper in arXiv:1809.04256 but now with an improved (more general) deep learning model written in PyTorch instead of Keras.<br><br>
+  The best way to learn how to use it use is by openning and executing a notebook libraries.ipynb in Google Colab. If for some reason Github doesn't open it after several tries (happened a few times to me), just use [this direct link](https://colab.research.google.com/github/pycroscopy/AICrystallographer/blob/master/LibraryNet/libraries.ipynb).
