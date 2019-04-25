@@ -5,8 +5,8 @@ from utils import *
 import graphs
 import matplotlib.pyplot as plt
 import warnings
-
 warnings.filterwarnings("ignore", module="networkx")
+
 image_file = sys.argv[1]
 
 # Folder and filename for the saved weights
@@ -21,7 +21,7 @@ imgdata, metadata = open_hdf(image_file)
 img_size = metadata['scan size']
 imgdata = optimize_image_size(imgdata, img_size)
 # Apply a trained model to the loaded data
-img, dec = dl_image(imgdata, model, nb_classes=3).decode()
+img, dec = dl_image(imgdata, model, use_gpu=False, nb_classes=3).decode()
 # Get atomic coordinates:
 coord = find_atoms(dec).get_all_coordinates()
 atoms, approx_max_bonds = atom_bond_dict()
