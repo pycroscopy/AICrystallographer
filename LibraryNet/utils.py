@@ -8,11 +8,27 @@ import h5py
 import json
 import numpy as np
 import numpy.linalg as LA
+import scipy.spatial as spatial
 import cv2
 from collections import OrderedDict
 
 def open_hdf(filepath):
-    '''Opens a custom hdf5 file with STEM image and reads the key metadata'''
+    """
+    Opens a custom hdf5 file with STEM image and reads the key metadata
+    
+    Parameters:
+    ----------
+    filepath: string
+        path to file with experimental data in hdf5 format
+
+    Returns
+    -------
+    image_data: 2D or 3D numpy array
+        Experimental image data
+    metadata: json
+        Metadata associated with the loaded image
+        (scan size, microscope paramters, etc.)
+    """
     with h5py.File(filepath, 'r') as f:
         image_data = f['image_data'][:]
         metadata = json.loads(f['metadata'][()])
@@ -30,7 +46,26 @@ def open_hdf(filepath):
     return image_data, metadata
 
 def open_library_hdf(filepath, *args):
-    '''Opens an hdf5 file with experimental image and defect coordinates'''
+    """
+    Opens an hdf5 file with experimental image and defect coordinates
+    
+    Parameters:
+    ----------
+    filepath: string
+        path to file with 'library' file in hdf5 format
+    *args: dict
+        dictionary with the types of lattice and dopant atoms
+
+    Returns
+    -------
+    image_data: 2D numpy array
+        Experimental image data
+    scan_size: float 
+        Image size in picometers
+    coordinates_all: numpy array
+        nrows*3 array; the first two columns are x and y coordinates
+        the third column shows atom type/class
+    """
     try:
         atoms = args[0]
     except IndexError:
@@ -57,8 +92,27 @@ def open_library_hdf(filepath, *args):
     return image_data, scan_size, coordinates_all
 
 def optimize_image_size(image_data, scan_size, px2ang=0.128, divisible_by=8):
-    '''Adjusts the size of input image for getting
-       the optimal decoding result with a neural network'''
+    """
+    Adjusts the size of input image for getting
+    an optimal decoding result with a neural network
+
+    Parameters:
+    ----------
+    image_data: 2D numpy array
+        Experimental image
+    scan_size: float
+        Image size in picometers
+    px2ang: float
+        Optinal pixel-to-angstrom ratio
+    divisible_by: int
+        The resize image must be divisible by 2**n where
+        n is a number of max-pooling layers used in a network
+
+    Returns
+    -------
+    image_data: 2D numpy arra
+        Resized image
+    """
     if np.amax(image_data) > 255:
         image_data = image_data/np.amax(image_data)
     image_size = image_data.shape[0]
@@ -77,8 +131,10 @@ def atom_bond_dict(atom1='C', atom2='Si',
                    bond11=('C', 'C', 190),
                    bond12=('C', 'Si', 210),
                    bond22=('Si', 'Si', 250)):
-    '''Returns type of host lattice atom, type of impurity atom
-       and maximum bond lengths between each pair'''
+    """
+    Returns type of host lattice atom, type of impurity atom
+    and maximum bond lengths between each pair in the form of dictionaries
+    """
     atoms = OrderedDict()
     atoms['lattice_atom'] = atom1
     atoms['dopant'] = atom2
@@ -88,17 +144,24 @@ def atom_bond_dict(atom1='C', atom2='Si',
     return atoms, approx_max_bonds
 
 def strainfunction(molecule_coord1, molecule_coord2, nnd_max=2):
-    '''@Author: Xin Li CNMS/ORNL'''
-    ##############
-    # given points_ref and points_tar
-    # estimator strain
-    # Input: points_ref, points_target
-    # Return:
-    # F_est
-    # t_est: translation vector
-    # E_est: strain tensor
-    # R_est: rotation matrix
-    #############
+    """
+    Estimates strain, translation and rotation components
+    for transforming one set of coordinates into another
+    @Author: Xin Li CNMS/ORNL
+    
+    Parameters:
+    ----------
+    molecule_coord1: numpy array with shape nrows*2
+        First set of coordinates
+    molecule_coord2: numpy array with shape nrows*2
+        Second set of coordinates
+
+    Returns
+    -------
+    out: dict
+        Ordered dictionary with calculated components of
+        strain tensor, translation vecor and rotation vector
+    """
     if len(molecule_coord1) != len(molecule_coord2):
         print('The defect structure is likely broken due to large strain',\
               'or you need to check a search radius')
@@ -122,3 +185,28 @@ def strainfunction(molecule_coord1, molecule_coord2, nnd_max=2):
     out['strain_tensor'] = E_est
     out['rotation_matrix'] = R_est
     return out
+
+def nn_atomdistance(coord):
+    """
+    Calculates nearest neighbor atomic distances
+
+    Parameters:
+    ----------
+    coord: numpy array with shape nrows*3 or nrows*2
+        The first two columns must be x and y coordinates
+
+    Returns
+    -------
+    np.mean(distances_all): float
+        Mean value of atomic nearest-neighbor distance
+    np.std(distances_all): float
+        Standard deviation value of atomic nearest-neighbor distances
+    """
+    distances_all = []
+    checked_coord = []
+    for i1, c in enumerate(coord[:,:2]):
+        d, i2 = spatial.KDTree(coord[:,:2]).query(c, k=2)
+        if tuple((i2[-1], i1)) not in checked_coord:
+            checked_coord.append(tuple((i1, i2[-1])))
+            distances_all.append(d[-1])
+    return np.mean(distances_all), np.std(distances_all)
