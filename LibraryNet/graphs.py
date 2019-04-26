@@ -12,10 +12,27 @@ import itertools
 import matplotlib.pyplot as plt
 from collections import Counter
 
+# TODO: simplify a process of getting from atomfinder output to graph
+#       where nodes and edges correspond to atoms and bonds
+#       (it works fine now, but is a bit overcomplicated)
 
 def to_dataframe(coordinates, atoms):
     """
-    Transforms output of atomfinder to a panda dataframe
+    Transforms output of atomfinder to panda dataframe
+    
+    Parameters:
+    ----------
+    coordinates: numpy array (dtype=np.float)
+        array with shape of nrows*3
+        first two columns are xy coordinates
+        third column is atomic classes
+    atoms: dict
+        dictionary defining lattice and dopant atom types
+
+    Returns
+    -------
+    df: pandas dataframe
+        dataframe with atom type and coordinates
     """
     x, y, atomlist = coordinates.T
     atomlist = np.array(atomlist, dtype=np.str)
@@ -27,7 +44,18 @@ def to_dataframe(coordinates, atoms):
 
 def make_graph_nodes(dataframe, verbose=True):
     """
-    Creates graph nodes from a panda dataframe with atomic coordinates
+    Creates graph nodes from a pandas dataframe with atomic coordinates
+    
+    Parameters
+    ----------
+    dataframe: pandas dataframe
+        dataframe with atom types and positions
+    verbose: boolean
+
+    Returns
+    -------
+    U: networkx graph object (nodes only)
+    u_atoms: unique atomic species in graph
     """
     u_atoms, indices = np.unique(dataframe.values[:,0], return_index=True)
     if verbose:
@@ -40,11 +68,10 @@ def make_graph_nodes(dataframe, verbose=True):
         else:
             for i, (idx, x, y) in enumerate(dataframe.values[indices[j] : ]):
                 U.add_node(idx+" {}".format(i+1), pos=(y, x))
-    pos = nx.get_node_attributes(U,'pos')
     n_nodes = len(U.nodes())
     if verbose:
         print('Created', str(n_nodes), 'graph nodes corresponding to atomic species') 
-    return U, n_nodes, pos, u_atoms
+    return U, u_atoms
 
 def dist(U1, U2, p1, p2):
     """
@@ -54,8 +81,10 @@ def dist(U1, U2, p1, p2):
            (U1.node[p1]['pos'][0]-U2.node[p2]['pos'][0])**2)
 
 def atomic_pairs_data(atomic_species, target_size, *args, **kwargs):
-    '''Creates dictionary of atomic pairs with
-       a maximum allowed bond length for each pair'''
+    """
+    Creates dictionary of atomic pairs with
+    a maximum allowed bond length for each pair
+    """
     try:
         image_size, = kwargs.values()
     except ValueError:
@@ -79,6 +108,18 @@ def atomic_pairs_data(atomic_species, target_size, *args, **kwargs):
 def create_graph_edges(U, atomic_pairs_d):
     """
     Add edges to a graph ("chemical bonds")
+
+    Parameters
+    ----------
+    U: networkx graph
+        graph with nodes already defined
+    atomic_pairs_d: dict
+        dictionary defining maximum bond length allowed for each pair of atoms
+    
+    Returns
+    -------
+    U: networkx graph
+        graph with nodes and edges
     """
     for k in atomic_pairs_d.keys():
         for p1 in U.nodes():
@@ -92,8 +133,22 @@ def create_graph_edges(U, atomic_pairs_d):
 
 def refine_structure(U, *args, verbose=True, **kwargs):
     """
-    Removes graph nodes (and corresponding edges) if they are not
-    directly connected to the dopant
+    Removes graph nodes (and corresponding edges)
+    if they are not directly connected to a dopant
+    
+    Parameters
+    ----------
+    U: networkx graph
+        graph with nodes and edges defined
+    *args: dict
+        dictionary defining lattice and dopant atom types
+    **kwargs: int
+        maximum coordination number for dopant
+    
+    Returns:
+    -------
+    U: networkx graph
+        refined graph (dopant and its first coordination sphere)
     """
     try:
         lattice_atom, dopant = args[0].values()
@@ -128,15 +183,39 @@ def refine_structure(U, *args, verbose=True, **kwargs):
     if verbose:
         print('Refinement procedure based on the maximum coordination number has been completed')
 
-def plot_graph(Graph, atomic_species, pos, exp_img, img_size,
+def plot_graph(Graph, atomic_species, exp_img, img_size,
                atomic_labels=True, overlay=False, **kwargs):
     """
     Plots experimental image and lattice graph
-    More details TBA
+    
+    Parameters:
+    ----------
+    Graph: networkx graph
+        graph with defined nodes and edges
+    atomic_species: list of strings
+        list of unique atomic species
+    exp_img: 2D or 4D numpy array
+        experimental image data of shape width*height or
+        nbatches*width*height*nchannels
+    img_size: float
+        size of image in picometers
+    atomic_labels: boolean
+        Show labels corresponding to atomic spcecies for each node
+    overlay: boolean
+        Plot graph on top of experimental image
+    **node_size: float
+        size of graph nodes
+    **font_size: float
+        size of node labels
+
+    Returns:
+    -------
+    Graph plot
     """
     c_nodes = kwargs.get('node_size') if kwargs.get('node_size') is not None else 200
     c_fonts = kwargs.get('font_size') if kwargs.get('font_size') is not None else c_nodes/15
-    exp_img = exp_img[0, :, :, 0]
+    if np.ndim(exp_img) == 4:
+        exp_img = exp_img[0, :, :, 0]
     color_map = []
     colors = ['orange', 'red', 'blue', 'black', 'magenta', 'gray', 'green']
     for node in Graph.nodes():
@@ -166,22 +245,31 @@ def plot_graph(Graph, atomic_species, pos, exp_img, img_size,
     ax[1].set_ylim(exp_img.shape[1], 0)
     ax[1].axis('off')
     ax[1].set_aspect('equal')
+    pos = nx.get_node_attributes(Graph, 'pos')
     nx.draw_networkx_nodes(Graph, pos=pos, nodelist=Graph.nodes(), node_color=color_map,
                            node_size=c_nodes, alpha=alpha_)
-    nx.draw_networkx_edges(Graph, pos,width=1.5, edge_color=edge_color_, alpha=alpha_)
+    nx.draw_networkx_edges(Graph, pos, width=1.5, edge_color=edge_color_, alpha=alpha_)
     if atomic_labels == True:
         nx.draw_networkx_labels(Graph, pos,labels=labels_atoms,font_size=c_fonts)
     elif atomic_labels == False:
         nx.draw_networkx_labels(Graph, pos,font_size=c_fonts/2)
     plt.show(block=False)
 
-def get_subgraphs(U, verbose=True):
-
+def get_subgraphs(Graph, verbose=True):
     """
     Finds individual defects after graph refinement procedure
-    More details TBA
+
+    Parameters:
+    ----------
+    Graph: networkx graph
+    verbose: boolean
+
+    Returns:
+    -------
+    sub_graphs: generator
+        generator of graphs (one for each connected component)
     """
-    sub_graphs = list(nx.connected_component_subgraphs(U))
+    sub_graphs = list(nx.connected_component_subgraphs(Graph))
     if verbose:
         print('\nIdentified', len(sub_graphs), 'defect structures')
     return sub_graphs
@@ -190,7 +278,19 @@ def get_defect_coord(sg):
     """
     Returns coordinates of the center of the mass of a defect
     and all the coordinates and type of all the atoms in the defect
-    More details TBA
+
+    Parameters
+    ----------
+    sg: networkx graph
+        graph correponding to a isolated atomic defect structure
+
+    Returns
+    -------
+    defect_com: list of floats
+        center of the mass coordinates
+    defect_atom_coord: numpy array
+        array with nrows*3 shape; first two columns are xy coordinates,
+        third column is atomic classes
     """
     defect_coord_x = np.array([])
     defect_coord_y = np.array([])
@@ -209,7 +309,21 @@ def get_defect_coord(sg):
     return defect_com, defect_atom_coord
 
 def get_angles(sg, dopant):
-    """Calculates angles around dopant(s) for a subgraph"""
+    """
+    Calculates angles around dopant(s) for a subgraph
+    
+    Parameters
+    ----------
+    sg: networkx graph
+        graph corresponding to isolated atomic structure
+    dopant: str
+        name of dopant
+
+    Returns
+    -------
+    angles: numpy array
+        1D array of angles formed between dopant and host lattice atoms
+    """
     angles = np.array([])
     for p1 in [node for node in sg.nodes() if node.split()[0] == dopant]:
         for atuple in list(set(tuple(sorted(a)) for a in itertools.product(sg.neighbors(p1), repeat = 2))):
@@ -223,8 +337,26 @@ def get_angles(sg, dopant):
     return angles
 
 def get_bond_lengths(sg, dopant, img_size, exp_img):
-    """Calculates bond length between dopant(s) and
-       surrounding host lattice atoms for a subgraph"""
+    """
+    Calculates bond length between dopant(s) and
+    surrounding host lattice atoms for a subgraph
+    
+    Parameters
+    ----------
+    sg: networkx graph
+        graph corresponding to isolated atomic structure
+    dopant: str
+        name of dopant
+    img_size: float
+        size of image in picometers
+    exp_img: 2D or 4D numpy array
+        experimental image with equal height and width
+    
+    Returns
+    -------
+    bond_length: 1D numpy array
+        array of bond lengths formed between dopant and lattice atoms
+    """
     bond_length = np.array([])
     for p1 in [node for node in sg.nodes() if node.split()[0] == dopant]:
         for p2 in sg.neighbors(p1):
@@ -236,22 +368,50 @@ def construct_graphs(img, img_size, coord, atoms, approx_max_bonds, *args,
                      raw_data=True, save_all=False, plot_result=True, verbose=True):
     """
     Constructs graphs, plots them and saves defect coordinates with the image
-    More details TBA
+
+    Parameters
+    ----------
+    img: 2D or 4D numpy array
+        experimental image
+    img_size: float
+        experimental image size in picometers
+    coord: numpy array
+        atomic coordinates in a form of nrows*3 array; first two columns are
+        xy coordinates, third column is atomic classes
+    atoms: dict
+        dictionary defining lattice and dopant atom types
+    approx_max_bonds: dict
+        dictionary defining maximum allowable bond lengths
+        for each pair of atomic species
+    *args: str
+        filename (used when result is saved)
+    raw_data: boolean
+        Indicates whether the data is raw/new or was already processed
+    save_all: boolean
+        saves all processed data without asking
+    plot_results: boolean
+        plots constructed graphs
+    verbose: boolean
+
+    Returns
+    -------
+    Plots and saves image data with the coordinates of extracted atomic
+    structures/defects
     """
     try:
         imgfile = args[0]
     except IndexError:
         imgfile = None
-    target_size = img.shape[1:3]
+    target_size = img.shape[1:3] if np.ndim(img) == 4 else img.shape
     df = to_dataframe(coord, atoms)
-    U, n_nodes, pos, atomic_species = make_graph_nodes(df, verbose)
+    U, atomic_species = make_graph_nodes(df, verbose)
     atomic_pairs_d, image_size=atomic_pairs_data(
         atomic_species, target_size, approx_max_bonds, image_size=img_size)
     create_graph_edges(U, atomic_pairs_d)
     refine_structure(U, atoms, verbose=verbose, max_coord=4)
     if plot_result:
         plot_graph(
-            U, atomic_species, pos, img,
+            U, atomic_species, img,
             img_size, atomic_labels=True, overlay=True
         )
     sub_graphs = get_subgraphs(U, verbose)
