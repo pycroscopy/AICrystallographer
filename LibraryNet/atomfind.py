@@ -74,7 +74,6 @@ class dl_image:
             d0, d1, _ = image_data_p.shape
             image_data_p = np.concatenate(
                 (image_data_p, np.zeros((d0, d1, 1))), axis=2)
-
         return image_data_p
 
     def hist_equalize(self, *args, number_bins=5):
@@ -95,9 +94,7 @@ class dl_image:
         for i, img in enumerate(image_data_):
             img = equalize(img)
             image_data_h[i, :, :] = img
-
         return image_data_h
-
 
     def torch_format(self, image_data_):
         '''Reshapes and normalizes (optionally) image data
@@ -125,7 +122,6 @@ class dl_image:
             prob = prob.cpu()
         prob = prob.permute(0, 2, 3, 1) # reshape with channel=last as in tf/keras
         prob = prob.numpy()
-
         return prob
     
     def decode(self):
@@ -143,7 +139,6 @@ class dl_image:
         images_data_torch = image_data_torch.permute(0, 2, 3, 1)
         images_numpy = images_data_torch.numpy()
         return images_numpy, decoded_imgs
-
 
 class find_atoms:
     '''
