@@ -143,8 +143,8 @@ def optimize_image_size(image_data, scan_size, px2ang=0.128, divisible_by=8):
     return image_data
 
 def atom_bond_dict(atom1='C', atom2='Si',
-                   bond11=('C', 'C', 190),
-                   bond12=('C', 'Si', 210),
+                   bond11=('C', 'C', 175),
+                   bond12=('Si', 'C', 210),
                    bond22=('Si', 'Si', 250)):
     """
     Returns type of host lattice atom, type of impurity atom
@@ -155,7 +155,7 @@ def atom_bond_dict(atom1='C', atom2='Si',
     atoms['dopant'] = atom2
     approx_max_bonds = {(bond11[0], bond11[1]): bond11[2],
                         (bond12[0], bond12[1]): bond12[2],
-                        (bond22[0], bond22[1]): bond12[2]}
+                        (bond22[0], bond22[1]): bond22[2]}
     return atoms, approx_max_bonds
 
 def strainfunction(molecule_coord1, molecule_coord2, nnd_max=2):
