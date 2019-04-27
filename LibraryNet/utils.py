@@ -31,7 +31,8 @@ def open_hdf(filepath):
     """
     with h5py.File(filepath, 'r') as f:
         image_data = f['image_data'][:]
-        metadata = json.loads(f['metadata'][()])
+        metadata = f['image_data'].attrs['metadata']
+        metadata = json.loads(metadata)
         if image_data.ndim == 2:
             n_images = 1
             w, h = image_data.shape
@@ -45,7 +46,7 @@ def open_hdf(filepath):
         print("Type of experiment:", metadata["type of data"])
     return image_data, metadata
 
-def open_library_hdf(filepath, *args):
+def open_library_hdf(filepath, *args, verbose=True):
     """
     Opens an hdf5 file with experimental image and defect coordinates
     
@@ -55,6 +56,7 @@ def open_library_hdf(filepath, *args):
         path to file with 'library' file in hdf5 format
     *args: dict
         dictionary with the types of lattice and dopant atoms
+    verbose: boolean
 
     Returns
     -------
@@ -73,11 +75,24 @@ def open_library_hdf(filepath, *args):
     with h5py.File(filepath, 'r') as f:
         image_data = f['nn_input'][:]
         scan_size = f['nn_input'].attrs['scan size']
+        if verbose:
+            try:
+                metadata = f['nn_input'].attrs['metadata']
+            except KeyError:
+                metadata = None
+                print('No metadata found')
+            if metadata is not None:
+                metadata = json.loads(metadata)
+                print("Sample name:", metadata["sample name"])
+                print("Type of experiment:", metadata["type of data"])
+                print("Sample growth -->")
+                for k, v in metadata["sample growth"].items():
+                    print("{}: ""{}".format(k, v))
         coordinates_all = np.empty((0, 3))
         for k in f.keys():
             if k != 'nn_input':
                 coordinates = f[k].value
-                coordinates = np.array(coordinates, dtype = 'U32')
+                coordinates = np.array(coordinates, dtype='U32')
                 coordinates_all = np.append(coordinates_all, coordinates, axis=0)
     if atoms is not None:
         atomlist = coordinates_all[:, -1]

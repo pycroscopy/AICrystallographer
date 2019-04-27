@@ -5,6 +5,7 @@ Author: Maxim Ziatdinov
 """
 import os
 import h5py
+import json
 import numpy as np
 import pandas as pd
 import networkx as nx
@@ -12,9 +13,10 @@ import itertools
 import matplotlib.pyplot as plt
 from collections import Counter
 
-# TODO: simplify a process of getting from atomfinder output to graph
+# TODO: -simplify a process of getting from atomfinder output to graph
 #       where nodes and edges correspond to atoms and bonds
 #       (it works fine now, but is a bit overcomplicated)
+#       -save library data in USID format
 
 def to_dataframe(coordinates, atoms):
     """
@@ -398,14 +400,15 @@ def construct_graphs(img, img_size, coord, atoms, approx_max_bonds, *args,
     Plots and saves image data with the coordinates of extracted atomic
     structures/defects
     """
-    try:
-        imgfile = args[0]
-    except IndexError:
-        imgfile = None
+    # Parsing *args list
+    arg1 = [a for a in args if isinstance(a, str)]
+    imgfile = arg1[0] if len(arg1) > 0 else None
+    arg2 = [a for a in args if isinstance(a, dict)]
+    metadata = arg2[0] if len(arg2) > 0 else None
     target_size = img.shape[1:3] if np.ndim(img) == 4 else img.shape
     df = to_dataframe(coord, atoms)
     U, atomic_species = make_graph_nodes(df, verbose)
-    atomic_pairs_d, image_size=atomic_pairs_data(
+    atomic_pairs_d, img_size = atomic_pairs_data(
         atomic_species, target_size, approx_max_bonds, image_size=img_size)
     create_graph_edges(U, atomic_pairs_d)
     refine_structure(U, atoms, verbose=verbose, max_coord=4)
@@ -449,7 +452,11 @@ def construct_graphs(img, img_size, coord, atoms, approx_max_bonds, *args,
                 if 'nn_input' not in f.keys():
                     nn_input = f.create_dataset('nn_input', data=img)
                     nn_input.attrs['scan size'] = img_size
+                    if metadata is not None:
+                        nn_input.attrs['metadata'] = json.dumps(metadata)
                 if 'defect_coord_{}'.format(i) not in f.keys():
-                    f.create_dataset('defect_coord_{}'.format(i),
-                                     data=np.string_(defect_coord, encoding="utf-8"))
-            print('Saved file with defect coordinates to disk\n')
+                    coord_d = f.create_dataset('defect_coord_{}'.format(i),
+                                             data=np.string_(defect_coord, encoding="utf-8"))
+                    coord_d.attrs['defect type'] = defect_formula
+                    if verbose:
+                        print('Saved file with defect coordinates to disk\n')
