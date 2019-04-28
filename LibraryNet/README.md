@@ -1,5 +1,5 @@
 Status: <b>active project</b><br>
-Please feel free to suggest possible modifications of a workflow and library format to better suite the microscopy/materials community needs.
+Please feel free to suggest possible modifications of the workflow and library format to better suite the microscopy/materials community needs.
 
 # LibraryNet
    Workflow based on a combination of deep neural network and analysis of lattice graph structures for creating a library of Si point defects in graphene. This analysis should also work for other systems (but will require a different training set for a neural network) with a known impurity atom in a host lattice, which can have different configurations, for example, it can form dimers, trimers and tetramers and each impurity atom in a defect complex may have different number of bonds to the nearby host lattice atoms. The workflow is based on our paper in arXiv:1809.04256 but now with an improved (more general) deep learning model written in PyTorch instead of Keras. The current model(s) can simultaneously find lattice and impurity atoms and avoid "bad" (amorphous) regions in the images.<br><br>
