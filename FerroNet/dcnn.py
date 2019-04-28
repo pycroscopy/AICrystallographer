@@ -57,8 +57,7 @@ class conv2dblock(nn.Module):
         output = self.block(x)
         return output
 
-class dilation_block(nn.Module):
-    
+class dilation_block(nn.Module): 
     def __init__(self, input_channels, output_channels,
                  dilation_values, padding_values,
                  kernel_size=3, stride=1, lrelu_a=0.01,
@@ -102,8 +101,7 @@ class dilation_block(nn.Module):
             atrous_layers.append(x.unsqueeze(-1))
         return torch.sum(torch.cat(atrous_layers, dim=-1), dim=-1)
 
-class upsample_block(nn.Module):
-    
+class upsample_block(nn.Module):   
     def __init__(self, input_channels, output_channels,
                  mode='interpolate', kernel_size=1,
                  stride=1, padding=0):
@@ -139,8 +137,7 @@ class upsample_block(nn.Module):
 
 
 
-class ferronet(nn.Module):
-    
+class ferronet(nn.Module): 
     def __init__(self, nb_classes, nb_filters=16):
         '''Builds  a fully convolutional neural network model
         Args:
@@ -220,6 +217,5 @@ class ferronet(nn.Module):
         u1 = self.c6(u1)
         # pixel-wise classification
         px = self.px(u1)
-        output = F.log_softmax(px, dim = 1)
-        
+        output = F.log_softmax(px, dim = 1)  
         return output
