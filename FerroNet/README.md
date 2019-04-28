@@ -1,6 +1,6 @@
 Status: <b>active project</b><br>
 <p align="justify">
-Please feel free to suggest possible modifications of a workflow to better suite the microscopy/materials community needs.</p>
+Please feel free to suggest possible modifications of a workflow to better suite the microscopy/ferroelectric community needs.</p>
 
 <h1>FerroNet</h1>
 <p align="justify">
