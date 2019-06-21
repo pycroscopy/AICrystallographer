@@ -3,4 +3,4 @@ ports:
 tasks:
 - init: python3 -m pip install numpy scipy matplotlib scikit-image scikit-learn opencv-python h5py pandas jupyterlab
 - init: python3 -m pip install https://download.pytorch.org/whl/cpu/torch-1.1.0-cp37-cp37m-linux_x86_64.whl
-- init: curl -O https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-251.0.0-linux-x86_64.tar.gz && tar zxvf google-cloud-sdk-251.0.0-linux-x86_64.tar.gz google-cloud-sdk && echo "Use 'gcloud init' to set up Google Cloud SDK"
+- init: curl -O https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-251.0.0-linux-x86_64.tar.gz && tar zxvf google-cloud-sdk-251.0.0-linux-x86_64.tar.gz google-cloud-sdk && ./google-cloud-sdk/install.sh && echo "Use 'gcloud init' in a new terminal to set up Google Cloud SDK"
