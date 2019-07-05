@@ -1,4 +1,3 @@
-pip==19.1.1
 setuptools==41.0.1
 numpy==1.16.4 
 scipy==1.3.0
@@ -9,5 +8,7 @@ opencv-python==4.1.0.25
 h5py==2.9.0
 pandas==0.24.2
 jupyterlab==1.0.1
+pydot==1.3.0
+torchviz==0.0.1
 gdown==3.8.1
 tensorflow==2.0.0-beta1  
