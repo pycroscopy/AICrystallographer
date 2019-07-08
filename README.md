@@ -11,7 +11,7 @@ AI Crystallographer is an active project and we expect to be adding more workflo
 <br>
 <h2>How to use</h2>
   
-The easiest way to use the tools in this package is by opening the notebooks in Google Colab either by clicking "Open in Colab" in the GitHUb-opened notebook file or by installing a Colab browser extension.<br>
+The easiest way to use the tools in this package is by opening the notebooks in Google Colab either by clicking "Open in Colab" in the GitHub-opened notebook file or by installing a Colab browser extension.<br>
 <p align="center">
 <img src="https://drive.google.com/uc?export=view&id=1XCydssu0RIxlRKmKklfuP_wtqdXQV5fB" width="75%" title="DL">
 
