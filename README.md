@@ -9,10 +9,10 @@ AI Crystallographer is an active project and we expect to be adding more workflo
 <li><p align="justify"><b>Tutorials:</b> Tutorial-like notebooks on using class activation maps for locating defects in the images and using a fully convolutional neural network for cleaning atom-resolved data and locating atoms in it.
 </ul>
 <br>
-<b>How to use</b>
+<h2>How to use</h2>
   
 The easiest way to use the tools in this package is by opening the notebooks in Google Colab either by clicking "Open in Colab" in the GitHUb-opened notebook file or by installing a Colab browser extension.<br>
 <p align="center">
 <img src="https://drive.google.com/uc?export=view&id=1XCydssu0RIxlRKmKklfuP_wtqdXQV5fB" width="75%" title="DL">
 
-You may also use this package via Docker container. First, clone the repository to your local machine. Then, from your terminal, ```cd``` into the cloned repository and run ```docker build -t aicr .``` command (you may substitute 'aicr' with whatever name you like). Once it's done buiding a Docker image, run ```docker run -it -p 8080:8080 -v <path_to_directory_with_AICrystallographer>:/home aicr /bin/bash``` to start a container. You will now be able to launch a Jupyter notebook from inside your container by running the following command ```jupyter lab --ip=0.0.0.0 --port=8080 --allow-root command``` and opening a http://localhost:8080 from your browser. 
+You may also use this package via Docker container. First, clone the repository to your local machine. Then, from your terminal, ```cd``` into the cloned repository and run ```docker build -t aicr .``` command (you may substitute 'aicr' with whatever name you like). Once it's done buiding a Docker image, run ```docker run -it -p 8080:8080 -v <path_to_directory_with_AICrystallographer>:/home aicr /bin/bash``` to start a container. You will now be able to launch a Jupyter notebook from inside your container by running the command ```jupyter lab --ip=0.0.0.0 --port=8080 --allow-root command``` command and then opening a http://localhost:8080 in your browser. 
