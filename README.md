@@ -8,8 +8,9 @@ AI Crystallographer is an active project and we expect to be adding more workflo
 <li><b>SymmetryNet</b>: Application of a deep convolutional network used to determine 2D Bravais lattice symmetry from atomically resolved images. Based on our paper in npj Computational Materials 4, 30 (2018).</li>
 <li><p align="justify"><b>Tutorials:</b> Tutorial-like notebooks on using class activation maps for locating defects in the images and using a fully convolutional neural network for cleaning atom-resolved data and locating atoms in it.
 </ul>
-<br><br>
+<br>
 <b>How to use</b>
+  
 The easiest way to use the tools in this package is by opening the notebooks in Google Colab either by clicking "Open in Colab" in the GitHUb-opened notebook file or by installing a Colab browser extension.<br>
 <p align="center">
 <img src="https://drive.google.com/uc?export=view&id=1XCydssu0RIxlRKmKklfuP_wtqdXQV5fB" width="75%" title="DL">
