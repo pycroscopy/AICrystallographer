@@ -12,12 +12,36 @@ import torch.nn.functional as F
 from nnblocks import *
 
 
-def load_torchmodel(weights_path, model):
-    '''Loads saved weights into a model'''
-    if torch.cuda.device_count() > 0:
-        checkpoint = torch.load(weights_path)
+def load_torchmodel(lattice_type):
+    '''
+    Loads saved weights into a model for a specific lattice type
+
+    Args:
+        lattice_type: str
+            Select between ("graphene", "graphene-si" and "cubic")
+    
+    Returns:
+        pytorch model with pretrained weights loaded
+    '''
+    device_ = 'cuda' if torch.cuda.device_count() > 0 else 'cpu'
+    if lattice_type == 'graphene':
+        model = atomsegnet()
+        checkpoint = torch.load(
+            'saved_models/G-Si-DFT0-1-4-best_weights.pt', map_location=device_
+        )
+    elif lattice_type == 'graphene-si':
+        model = atomsegnet(nb_classes=3)
+        checkpoint = torch.load(
+            'saved_models/G-Si-m-2-3-best_weights.pt', map_location=device_
+        )
+    elif lattice_type == 'cubic':
+        model = resatomsegnet_s2()
+        checkpoint = torch.load(
+            'saved_models/cubic-best_weights.pt', map_location=device_)
     else:
-        checkpoint = torch.load(weights_path, map_location='cpu')
+        raise ValueError(
+            'Select one of the currently available models: graphene, graphene-si, cubic'
+        )
     model.load_state_dict(checkpoint)
     return model
     
