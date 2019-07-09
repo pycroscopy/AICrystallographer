@@ -8,12 +8,23 @@ AI Crystallographer is an active project and we expect to be adding more workflo
 <li><b>SymmetryNet</b>: Application of a deep convolutional network used to determine 2D Bravais lattice symmetry from atomically resolved images. Based on our paper in npj Computational Materials 4, 30 (2018).</li>
 <li><p align="justify"><b>Tutorials:</b> Tutorial-like notebooks on using class activation maps for locating defects in the images and using a fully convolutional neural network for cleaning atom-resolved data and locating atoms in it.
 </ul>
-<br>
-<h2>How to use</h2>
+
+## How to use
   
 The easiest way to use the tools in this package is by opening the notebooks in Google Colab either by clicking "Open in Colab" in the GitHub-opened notebook file or by installing a [Colab browser extension](https://chrome.google.com/webstore/detail/open-in-colab/iogfkhleblhcpcekbiedikdehleodpjo?hl=en). See our [tutorial notebook](https://colab.research.google.com/github/pycroscopy/AICrystallographer/blob/master/Tutorials/ColabNotebooks_BasicOperations.ipynb) for the best practices to use Google Colab notebooks.<br>
 <p align="center">
 <img src="https://drive.google.com/uc?export=view&id=1XCydssu0RIxlRKmKklfuP_wtqdXQV5fB" width="75%" title="DL">
 
-You may also use this package via Docker container. 
-First, clone the repository to your local machine. Then, from your terminal, ```cd``` into the cloned repository and run ```docker build -t aicr .``` command (you may substitute 'aicr' with whatever name you like). Once it finishes buiding a Docker image, run ```docker run -it -p 8080:8080 -v <path_to_directory_with_AICrystallographer>:/home aicr /bin/bash``` to start a container. You will now be able to launch a Jupyter notebook from inside your container by running ```jupyter lab --ip=0.0.0.0 --port=8080 --allow-root``` command and then opening a http://localhost:8080 in your browser. 
+You may also use this package via Docker container. First, clone the repository to your local machine. Then, from your terminal, ```cd``` into the cloned repository and run
+```shell
+docker build -t aicr .
+``` 
+(you may substitute 'aicr' with any name that you like). Once it finishes buiding a Docker image, run 
+```shell
+docker run -it -p 8080:8080 -v <path_to_AICrystallographer>:/home aicr /bin/bash
+``` 
+to start a container. You will now be able to launch a Jupyter notebook from inside your container by running
+```shell
+jupyter lab --ip=0.0.0.0 --port=8080 --allow-root
+```
+and then opening http://localhost:8080 in your browser. 
