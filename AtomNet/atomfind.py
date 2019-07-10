@@ -11,40 +11,69 @@ import time
 import numpy as np
 import cv2
 from scipy import ndimage
+from utils import Hook, mock_forward
 
 
 class dl_image:
     '''
     Image decoder with a trained neural network
     '''
-    def __init__(self, image_data, model, *args, nb_classes=1,
-                 max_pool_n=3, norm=1, use_gpu=False,
-                 histogram_equalization=False):
+    def __init__(self, image_data, model, *args, **kwargs):
         '''
         Args:
-            image_data (ndarray): image stack or a single image (all greyscale)
-            model: trained pytorch model
-            nb_classes: number of classes in the model
-            max_pool_n: number of max-pooling layers in the model
-            norm: image normalization to 1
-            use_gpu: optional use of gpu device for inference
-            histogram_equalization: Equilazes image histogram
-            args: tuple with image width and heigh for resizing operation
+            image_data: 2D or 3D numpy array
+                image stack or a single image (all greyscale)
+            model: object
+                trained pytorch model (skeleton+weights)
+            *param1: tuple
+                new image width and height (for resizing)
+        
+        Kwargs:
+            **nb_classes: int
+                number of classes in the model
+            **downsampled: int or float
+                downsampling factor
+            **norm: bool
+                image normalization to 1
+            **use_gpu: bool
+                optional use of gpu device for inference
+            **histogram_equalization: bool
+                Equilazes image histogram
         '''
         if image_data.ndim == 2:
             image_data = np.expand_dims(image_data, axis=0)
         self.image_data = image_data
+        self.model = model
         try:
             self.rs = args[0]
         except IndexError:
             self.rs = image_data.shape[1:3]
-        self.model = model
-        self.nb_classes = nb_classes
-        self.max_pool_n = max_pool_n
-        self.norm = norm
-        self.use_gpu = use_gpu
-        self.hist_equ = histogram_equalization
-    
+        if 'nb_classes' in kwargs:
+            self.nb_classes = kwargs.get('nb_classes')
+        else:
+            hookF = [Hook(layer[1]) for layer in list(model._modules.items())]
+            mock_forward(model)
+            self.nb_classes = [hook.output.shape for hook in hookF][-1][1]
+        if 'downsampled' in kwargs:
+            self.downsampled = kwargs.get('downsampled')
+        else:
+            hookF = [Hook(layer[1]) for layer in list(model._modules.items())]
+            mock_forward(model)
+            imsize = [hook.output.shape[-1] for hook in hookF]
+            self.downsampled = max(imsize)/min(imsize)
+        if 'norm' in kwargs:
+            self.norm = kwargs.get('norm')
+        else:
+            self.norm = 1
+        if 'use_gpu' in kwargs:
+            self.use_gpu = kwargs.get('use_gpu')
+        else:
+            self.use_gpu = False
+        if 'histogram_equalization' in kwargs:
+            self.hist_equ = kwargs.get('histogram_equalization')
+        else:
+            self.hist_equ = False
+
     def img_resize(self):
         '''Image resizing (optional)'''
         if self.image_data.shape[1:3] == self.rs:
@@ -65,16 +94,15 @@ class dl_image:
         except IndexError:
             image_data_p = self.image_data
         # Pad image rows (height)
-        while image_data_p.shape[1] % 2**self.max_pool_n != 0:
+        while image_data_p.shape[1] % self.downsampled!= 0:
             d0, _, d2 = image_data_p.shape
             image_data_p = np.concatenate(
                 (image_data_p, np.zeros((d0, 1, d2))), axis=1)
         # Pad image columns (width)
-        while image_data_p.shape[2] % 2**self.max_pool_n != 0:
+        while image_data_p.shape[2] % self.downsampled != 0:
             d0, d1, _ = image_data_p.shape
             image_data_p = np.concatenate(
                 (image_data_p, np.zeros((d0, d1, 1))), axis=2)
-
         return image_data_p
 
     def hist_equalize(self, *args, number_bins=5):
@@ -97,7 +125,6 @@ class dl_image:
             image_data_h[i, :, :] = img
 
         return image_data_h
-
 
     def torch_format(self, image_data_):
         '''Reshapes and normalizes (optionally) image data
