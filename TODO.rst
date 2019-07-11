@@ -4,6 +4,6 @@
 
 3. Add option for GMM-based classification of extracted defects in DefectNet
 
-4. Covert notebook in SymmetryNet into Colab notebook
+4. Convert notebook in SymmetryNet into Colab notebook
 
 5. Update README in Tutorials, DefectNet, SymmetryNet
