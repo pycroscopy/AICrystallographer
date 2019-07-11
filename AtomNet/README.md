@@ -13,3 +13,6 @@ Currently it accepts inputs in the form of 2D and 3D numpy arrays (single images
   
 ## How to use
 Once you go through 'GrapheneAtomFinder' notebook, use 'Test' notebook to analyze your data (follow the instructions in that notebook). Notice that once you click on 'Open in Colab' icon in a GitHub-opened notebook (or use 'Open in Colab' browser extension), the opened notebook will be completely independent from the notebook in this repository, so feel free to make any changes. You may want, however, to save it to your google drive to make sure that the changes won't be lost. Currently, one can use AtomNet for (S)TEM images from graphene-like systems and cubic lattices (<110> and <100> projections). We will be uploading more models in the near future. Let us know what specific type of systems you would like to investigate and we will try to prioritize them.
+
+<p align="center">
+<img src="https://drive.google.com/uc?export=view&id=1fPOLBpgIlxojoDnFBW9h-WJfWdtXfkOU" width="75%" title="DL">
