@@ -4,6 +4,8 @@
 
 3. Add option for GMM-based classification of extracted defects in DefectNet
 
-4. Convert notebook in SymmetryNet into Colab notebook
+4. Add example of model training with Cloud TPUs to Tutorials
 
-5. Update README in Tutorials, DefectNet, SymmetryNet
+5. Convert notebook in SymmetryNet into Colab notebook
+
+6. Update README in Tutorials, DefectNet, SymmetryNet
