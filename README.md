@@ -11,7 +11,7 @@ AI Crystallographer is an active project and we expect to be adding more workflo
 
 ## How to use
   
-This is a Jupyter notebook-centric project andthe easiest way to use the tools in this package is by opening the notebooks in Google Colab either by clicking "Open in Colab" in the GitHub-opened notebook file or by installing a [Colab browser extension](https://chrome.google.com/webstore/detail/open-in-colab/iogfkhleblhcpcekbiedikdehleodpjo?hl=en). See our [tutorial notebook](https://colab.research.google.com/github/pycroscopy/AICrystallographer/blob/master/Tutorials/ColabNotebooks_BasicOperations.ipynb) for the best practices to use Google Colab notebooks.<br>
+This is a Jupyter notebook-centric project and the easiest way to use the tools in this package is by opening and running the notebooks in Google Colab either by clicking "Open in Colab" in the GitHub-opened notebook file or by installing a [Colab browser extension](https://chrome.google.com/webstore/detail/open-in-colab/iogfkhleblhcpcekbiedikdehleodpjo?hl=en). See our [tutorial notebook](https://colab.research.google.com/github/pycroscopy/AICrystallographer/blob/master/Tutorials/ColabNotebooks_BasicOperations.ipynb) for the best practices to use Google Colab notebooks.<br>
 <p align="center">
 <img src="https://drive.google.com/uc?export=view&id=1XCydssu0RIxlRKmKklfuP_wtqdXQV5fB" width="75%" title="DL">
 
