@@ -10,11 +10,12 @@ AI Crystallographer is an active project and we expect to be adding more workflo
 </ul>
 
 ## How to use
-  
+#### Google Colab
 This is a Jupyter notebook-centric project and the easiest way to use the tools in this package is by opening and running the notebooks in Google Colab using one of the following options: i) clicking on "Open in Colab" in the GitHub-opened notebook file (caution: it seems that GitHub is having some issues with loading graphic-heavy notebooks), ii) installing a [Colab browser extension](https://chrome.google.com/webstore/detail/open-in-colab/iogfkhleblhcpcekbiedikdehleodpjo?hl=en), iii) opening notebooks in this repository from Google Colab [startpage](https://colab.research.google.com/github/pycroscopy/AICrystallographer). See our [tutorial notebook](https://colab.research.google.com/github/pycroscopy/AICrystallographer/blob/master/Tutorials/ColabNotebooks_BasicOperations.ipynb) for the best practices to work with Jupyter notebooks in Google Colab.<br>
 <p align="center">
 <img src="https://drive.google.com/uc?export=view&id=1XCydssu0RIxlRKmKklfuP_wtqdXQV5fB" width="75%" title="DL">
 
+#### Docker
 You may also use this package via Docker container. First, clone the repository to your local machine. Then, from your terminal, ```cd``` into the cloned repository and run
 ```shell
 docker build -t aicr .
