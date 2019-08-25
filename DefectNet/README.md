@@ -11,4 +11,4 @@ Complete workflow for locating atomic defects in electron microscopy movies usin
 
 ## How to use
 
-To use this method for your own data, [open 'DefectSniffer' notebook in Google Colaboratory](https://colab.research.google.com/github/pycroscopy/AICrystallographer/blob/master/DefectNet/DefectSniffer.ipynb) and follow instructions in the notebook. Currently it accepts inputs in the form of 3D numpy arrays (stack of images). We plan to incorporate Pycroscopy translators in the near future to make it posssible working directly with .dm3 and other popular file formats.
+To use this method on your own data, [open 'DefectSniffer' notebook in Google Colaboratory](https://colab.research.google.com/github/pycroscopy/AICrystallographer/blob/master/DefectNet/DefectSniffer.ipynb) and follow instructions in the notebook. Currently it accepts inputs in the form of 3D numpy arrays (stack of images). We plan to incorporate Pycroscopy translators in the near future to make it posssible working directly with .dm3 and other popular file formats.
