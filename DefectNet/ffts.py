@@ -80,6 +80,9 @@ def raaft(patch, which_norm):
     center = (p_sz[0]//2, p_sz[1]//2)
     rad = np.min((p_sz[0] / 2, p_sz[1] / 2))
     tol = 1e-10 # this so we don't accidentally divide by 0
+
+    #
+    #patch = (patch - np.mean(patch)) / np.std(patch)
     
     # Take the absolute value of the Fourier transform
     tmp_img = np.abs(fftpack.fftshift(cv2.dct(patch)))
@@ -166,7 +169,7 @@ def raaftClusterFeatureVectors(feat_vecs, N):
     gmm = mixture.BayesianGaussianMixture(
         n_components=N,
         covariance_type='full',
-        max_iter=1000,
+        max_iter=5000,
         tol=1e-5).fit(feat_vecs)
     clusters = gmm.predict(feat_vecs)
 
@@ -223,7 +226,7 @@ def raaftGenResults(img_sz, clusters, N, patch_sz, num_x, num_y):
     return mask_img
 
 
-def raaftRun(params, img):
+def raaftRun(p, img):
     """
     Runs Radially Averaged Absolute Fourier transform (RAAFT) method on the passed in image.
 
