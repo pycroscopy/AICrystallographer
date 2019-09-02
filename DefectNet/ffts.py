@@ -58,7 +58,7 @@ def threshImg(diff, threshL=0.25, threshH=0.75):
     return threshI
 
 
-def raaft(patch, which_norm):
+def raaft(patch, which_norm, inner=0, outer=1):
     """
     Given an image patch and choice of norm, generate the RAAFT feature vector for that patch.
 
@@ -70,6 +70,12 @@ def raaft(patch, which_norm):
         Which norm to normalize the feature vector by. Can choose any real number
         for this value, but choosing 1 <= which_norm <= infty is the most natural.
         Choosing either 1 or 2 works well in most cases.
+    inner, outer : float
+        To help with noise it is sometimes useful to set parts of the Fourier transform
+        of in each patch to zero. If a patch has dimensions (px, py) then the points 
+        (kx,ky) in k-space which are not set to zero must satisfy: 
+            inner * sqrt(px^2 + py^2) <= sqrt(kx^2 + ky^2) 
+            outer * sqrt(px^2 + py^2) >= sqrt(kx^2 + ky^2)
 
     Returns
     -------
@@ -78,7 +84,7 @@ def raaft(patch, which_norm):
     """
     p_sz = patch.shape
     center = (p_sz[0]//2, p_sz[1]//2)
-    rad = np.min((p_sz[0] / 2, p_sz[1] / 2))
+    rad = np.sqrt((p_sz[0]**2 + p_sz[1]**2) / 2)
     tol = 1e-10 # this so we don't accidentally divide by 0
 
     #
@@ -89,17 +95,19 @@ def raaft(patch, which_norm):
 
     # Normalize the patch 
     tmp_img /= norm(np.ndarray.flatten(tmp_img), ord=which_norm) + tol
-    
+
     # Perform the polar transform
-    tmp_img = cv2.linearPolar(tmp_img, center, rad, cv2.INTER_CUBIC)
+    tmp_img = cv2.warpPolar(tmp_img, None, center, rad, cv2.WARP_FILL_OUTLIERS + cv2.INTER_CUBIC)
 
     # Sum over the radial variable
     feat_vec = np.sum(tmp_img, 0)
+    feat_vec[:int(rad*inner)] = 0
+    feat_vec[int(rad*outer):] = 0
         
     return np.array(feat_vec, ndmin=2)
 
 
-def raaftGenFeatureVectors(img, patch_sz, num_x, num_y, which_norm):
+def raaftGenFeatureVectors(img, patch_sz, num_x, num_y, which_norm, inner=0, outer=1):
     """
     Given an image, a patch size, and the number of patches in x and y dimensions
     calculate all of the feature vectors for this image. A warning is raised if
@@ -118,6 +126,12 @@ def raaftGenFeatureVectors(img, patch_sz, num_x, num_y, which_norm):
         Which norm to normalize the feature vector by. Can choose any real number
         for this value, but choosing 1 <= which_norm <= infty is the most natural.
         Choosing either 1 or 2 works well in most cases.
+    inner, outer : float
+        To help with noise it is sometimes useful to set parts of the Fourier transform
+        of in each patch to zero. If a patch has dimensions (px, py) then the points 
+        (kx,ky) in k-space which are not set to zero must satisfy: 
+            inner * sqrt(px^2 + py^2) <= sqrt(kx^2 + ky^2) 
+            outer * sqrt(px^2 + py^2) >= sqrt(kx^2 + ky^2)
 
     Returns
     -------
@@ -134,7 +148,13 @@ def raaftGenFeatureVectors(img, patch_sz, num_x, num_y, which_norm):
     x_step = (img_sz[0] - patch_sz) / (num_x - 1)
     y_step = (img_sz[1] - patch_sz) / (num_y - 1)
 
-    feat_vecs_mat = np.zeros((num_x * num_y, patch_sz))
+    # Calculate the size of the feature vector to preallocate an array
+    x_rng = range(0, patch_sz)
+    y_rng = range(0, patch_sz)
+    fv_size = raaft(img[np.ix_(x_rng, y_rng)], which_norm, inner, outer).size
+    feat_vecs_mat = np.zeros((num_x * num_y, fv_size))
+
+    # Generate all of the feature vectors for the image
     for count, (idx_x, idx_y)  in enumerate(np.ndindex((num_x, num_y))):
         x_center = patch_sz // 2 + int(np.round(idx_x * x_step))
         y_center = patch_sz // 2 + int(np.round(idx_y * y_step))
@@ -142,7 +162,7 @@ def raaftGenFeatureVectors(img, patch_sz, num_x, num_y, which_norm):
         x_rng = range(x_center - patch_sz//2, x_center + patch_sz//2)
         y_rng = range(y_center - patch_sz//2, y_center + patch_sz//2)
 
-        feat_vecs_mat[count,:] = raaft(img[np.ix_(x_rng, y_rng)], which_norm)
+        feat_vecs_mat[count,:] = raaft(img[np.ix_(x_rng, y_rng)], which_norm, inner, outer)
 
     return feat_vecs_mat
     
@@ -249,7 +269,9 @@ def raaftRun(p, img):
                                        p["patch_size"],
                                        p["num_patches_x"],
                                        p["num_patches_y"],
-                                       p["which_norm"])
+                                       p["which_norm"],
+                                       p["inner"],
+                                       p["outer"])
     print("done")
 
     print("Clustering...", end='', flush=True)
