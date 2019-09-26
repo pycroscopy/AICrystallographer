@@ -155,6 +155,7 @@ class dl_image:
 
         return prob
     
+    
     def decode(self):
         '''Make prediction'''
         image_data_ = self.img_resize()
@@ -163,12 +164,18 @@ class dl_image:
         image_data_ = self.img_pad(image_data_)
         image_data_torch = self.torch_format(image_data_)
         start_time = time.time()
-        decoded_imgs = self.predict(image_data_torch)
+        if image_data_torch.shape[0] < 20 and min(image_data_torch.shape[2:4]) < 512:
+            decoded_imgs = self.predict(image_data_torch)
+        else:
+            n, _, w, h = image_data_torch.shape
+            decoded_imgs = np.zeros((n, w, h, self.nb_classes))
+            for i in range(n):
+                decoded_imgs[i, :, :, :] = self.predict(image_data_torch[i:i+1])
         n_images_str = " image was " if decoded_imgs.shape[0] == 1 else " images were "
         print(str(decoded_imgs.shape[0]) + n_images_str + "decoded in approximately "
               + str(np.around(time.time() - start_time, decimals=2)) + ' seconds')
-        images_data_torch = image_data_torch.permute(0, 2, 3, 1)
-        images_numpy = images_data_torch.numpy()
+        image_data_torch = image_data_torch.permute(0, 2, 3, 1)
+        images_numpy = image_data_torch.numpy()
         return images_numpy, decoded_imgs
 
 
