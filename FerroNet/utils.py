@@ -82,16 +82,16 @@ def torch_format(images, norm=1, n_pooling=3):
        (assumes mage data is stored as numpy array)'''
     if images.ndim == 2:
         images = np.expand_dims(images, axis=0)
+    images = img_pad(images, n_pooling)
     images = np.expand_dims(images, axis=1)
     if norm != 0:
         images = (images - np.amin(images))/np.ptp(images)
-    #images = img_pad(images, n_pooling)
     images = torch.from_numpy(images).float()
     return images
 
 def predict(images, model, gpu=False):
     '''Returns probability of each pixel in image
-        belonging to an atom of a particualr type'''
+        belonging to an atom of a particular type'''
     if gpu:
         model.cuda()
         images = images.cuda()
