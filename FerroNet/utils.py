@@ -86,7 +86,7 @@ def torch_format(images, norm=1, n_pooling=3):
     if norm != 0:
         images = (images - np.amin(images))/np.ptp(images)
     images = img_pad(images, n_pooling)
-    images = torch.from_numpy(images).float()
+    #images = torch.from_numpy(images).float()
     return images
 
 def predict(images, model, gpu=False):
