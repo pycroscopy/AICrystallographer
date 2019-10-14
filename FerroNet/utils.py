@@ -76,19 +76,20 @@ class generate_batches:
             self.f.close()
             self.f = None
             
-def torch_format(images, norm = 1):
+def torch_format(images, norm=1, n_pooling=3):
     '''Reshapes dimensions, normalizes (optionally) 
        and converts image data to a pytorch float tensor.
        (assumes mage data is stored as numpy array)'''
     if images.ndim == 2:
-        images = np.expand_dims(images, axis = 0)
-    images = np.expand_dims(images, axis = 1)
+        images = np.expand_dims(images, axis=0)
+    images = np.expand_dims(images, axis=1)
     if norm != 0:
         images = (images - np.amin(images))/np.ptp(images)
+    images = img_pad(images, n_pooling)
     images = torch.from_numpy(images).float()
     return images
 
-def predict(images, model, gpu = False):
+def predict(images, model, gpu=False):
     '''Returns probability of each pixel in image
         belonging to an atom of a particualr type'''
     if gpu:
@@ -105,10 +106,35 @@ def predict(images, model, gpu = False):
     prob = prob.permute(0, 2, 3, 1)
     return prob
 
-def find_com(image_data, t = 0.5):
+def img_resize(image_data, rs):
+    '''Image resizing'''
+    image_data_r = np.zeros((image_data.shape[0], rs[0], rs[1]))
+    for i, img in enumerate(image_data):
+        img = cv2.resize(img, (rs[0], rs[1]))
+        image_data_r[i, :, :] = img
+    return image_data_r
+    
+def img_pad(image_data, n_pooling):
+    '''Pads the image if its size (w, h)
+    is not divisible by 2**n, where n is a number
+    of max-pooling layers in a network'''
+    # Pad image rows (height)
+    image_data_p = np.copy(image_data)
+    while image_data_p.shape[1] % 2**n_pooling != 0:
+        d0, _, d2 = image_data_p.shape
+        image_data_p = np.concatenate(
+            (image_data_p, np.zeros((d0, 1, d2))), axis=1)
+    # Pad image columns (width)
+    while image_data_p.shape[2] % 2**n_pooling != 0:
+        d0, d1, _ = image_data_p.shape
+        image_data_p = np.concatenate(
+            (image_data_p, np.zeros((d0, d1, 1))), axis=2)
+    return image_data_p
+
+def find_com(image_data, t=0.5):
     '''Returns center of the mass for all the blobs
        in each channel of network output'''
-    thresh = cv2.threshold(image_data,t, 1, cv2.THRESH_BINARY)[1]
+    thresh = cv2.threshold(image_data, t, 1, cv2.THRESH_BINARY)[1]
     lbls, nlbls = ndimage.label(thresh)
     com = np.array(ndimage.center_of_mass(
         thresh, lbls, np.arange(nlbls)+1))
