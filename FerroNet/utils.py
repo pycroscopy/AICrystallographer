@@ -1,6 +1,5 @@
 """
 Created on Tue Feb 12 14:20 2019
-
 @author: ziatdinovmax
 """
 
@@ -173,7 +172,7 @@ def estimate_nnd(com1, com2, icut=500):
     print('Average nearest-neighbor distance:', np.around(d0))
     return d0
 
-def estimate_rad(input_image, t= 0.5, icut=500):
+def estimate_rad(input_image, t=0.5, icut=500):
     '''Description TBA'''
     thresh = cv2.threshold(
     input_image, t, 1, cv2.THRESH_BINARY)[1]
@@ -192,6 +191,45 @@ def estimate_rad(input_image, t= 0.5, icut=500):
     ma0 = 0.5*np.mean(ma0 + 0.5*np.std(ma0))
     print('Average blob radius:', np.around(ma0))
     return ma0
+      
+    
+def sliding_window_decoding(model, imgdata, window_size, step_size, n_pooling, use_gpu=True):
+    '''Applies a trained neural network at each step of sliding window
+    for region of an image within the window's boudnaries and then
+    patches together a full image from the decoded results
+    normalized to account for a sliding window overlap'''
+    
+    decoded_dict = {}
+    for (x, y, window) in sliding_window(imgdata, step_size, window_size):
+        if window.shape[0] != window_size[0] or window.shape[1] != window_size[1]:
+            continue
+        imgdata_ = torch_format(window, window_size, n_pooling)
+        decoded_img = predict(imgdata_, model, use_gpu)
+        k = str(x) + '-' + str(y)
+        decoded_dict[k] = decoded_img[0,:,:,:].detach().cpu().numpy()
+    
+    decoded_image_l = np.zeros((imgdata.shape[0], imgdata.shape[1], decoded_img.shape[-1]))
+    decoded_image_l_ = np.zeros((imgdata.shape[0], imgdata.shape[1], decoded_img.shape[-1]))
+    for k, v in decoded_dict.items():
+        i, j = k.split('-')
+        i = int(i)
+        j = int(j)
+        decoded_image_l[
+            j:j+window_size[0], i:i+window_size[0], :] = decoded_image_l[
+                j:j+window_size[1], i:i+window_size[1], :] + v
+        decoded_image_l_[
+            j:j+window_size[0], i:i+window_size[0], :] = decoded_image_l_[
+                j:j+window_size[1], i:i+window_size[1], :] + 1
+    return decoded_image_l/decoded_image_l_
+
+
+def sliding_window(image, step_size, window_size):
+    '''Returns coordinates of the sliding window and the window itself'''
+    
+    for y in range(0, image.shape[0], step_size):
+        for x in range(0, image.shape[1], step_size):
+            yield (x, y, image[y:y + window_size[1], x:x + window_size[0]])
+            
 
 def color_list():
     '''Returns a list of colors for scatter/line plots'''
