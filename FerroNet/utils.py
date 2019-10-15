@@ -193,7 +193,7 @@ def estimate_rad(input_image, t=0.5, icut=500):
     return ma0
       
     
-def sliding_window_decoding(model, imgdata, window_size, step_size, n_pooling, use_gpu=True):
+def sliding_window_decoding(imgdata, model, window_size, step_size, n_pooling, use_gpu=True):
     '''Applies a trained neural network at each step of sliding window
     for region of an image within the window's boudnaries and then
     patches together a full image from the decoded results
