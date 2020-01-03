@@ -178,7 +178,7 @@ def estimate_rad(input_image, t=0.5, icut=500):
     input_image, t, 1, cv2.THRESH_BINARY)[1]
     thresh = cv2.convertScaleAbs(thresh)
     contours = cv2.findContours(
-        thresh.copy(),cv2.RETR_TREE,cv2.CHAIN_APPROX_NONE)[1]
+        thresh.copy(),cv2.RETR_TREE,cv2.CHAIN_APPROX_NONE)[0]
     ma0 = []
     for i, cnt in enumerate(contours):
         area = cv2.contourArea(cnt)
