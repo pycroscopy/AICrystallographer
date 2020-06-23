@@ -367,7 +367,8 @@ def get_bond_lengths(sg, dopant, img_size, exp_img):
     return np.unique(bond_length)
 
 def construct_graphs(img, img_size, coord, atoms, approx_max_bonds, *args,
-                     raw_data=True, save_all=False, plot_result=True, verbose=True):
+                     raw_data=True, save_all=False, plot_result=True, verbose=True,
+                     **kwargs):
     """
     Constructs graphs, plots them and saves defect coordinates with the image
 
@@ -394,6 +395,10 @@ def construct_graphs(img, img_size, coord, atoms, approx_max_bonds, *args,
     plot_results: boolean
         plots constructed graphs
     verbose: boolean
+    **node_size: float
+        size of graph nodes
+    **font_size: float
+        size of node labels
 
     Returns
     -------
@@ -415,7 +420,8 @@ def construct_graphs(img, img_size, coord, atoms, approx_max_bonds, *args,
     if plot_result:
         plot_graph(
             U, atomic_species, img,
-            img_size, atomic_labels=True, overlay=True
+            img_size, atomic_labels=True,
+            overlay=True, **kwargs
         )
     sub_graphs = get_subgraphs(U, verbose)
     # Analyze each defect in the image
