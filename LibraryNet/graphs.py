@@ -79,8 +79,8 @@ def dist(U1, U2, p1, p2):
     """
     Calculates distances between nodes of a given graph(s)
     """
-    return np.sqrt((U1.node[p1]['pos'][1]-U2.node[p2]['pos'][1])**2 + 
-           (U1.node[p1]['pos'][0]-U2.node[p2]['pos'][0])**2)
+    return np.sqrt((U1.nodes[p1]['pos'][1]-U2.nodes[p2]['pos'][1])**2 + 
+           (U1.nodes[p1]['pos'][0]-U2.nodes[p2]['pos'][0])**2)
 
 def atomic_pairs_data(atomic_species, target_size, *args, **kwargs):
     """
@@ -271,7 +271,7 @@ def get_subgraphs(Graph, verbose=True):
     sub_graphs: generator
         generator of graphs (one for each connected component)
     """
-    sub_graphs = list(nx.connected_component_subgraphs(Graph))
+    sub_graphs = list(Graph.subgraph(c).copy() for c in nx.connected_components(Graph))
     if verbose:
         print('\nIdentified', len(sub_graphs), 'defect structures')
     return sub_graphs
@@ -297,10 +297,10 @@ def get_defect_coord(sg):
     defect_coord_x = np.array([])
     defect_coord_y = np.array([])
     defect_atom = []
-    for d in sg.node:
+    for d in sg.nodes:
         defect_atom.append(d.split(' ')[0])
-        defect_coord_x = np.append(defect_coord_x, sg.node[d]['pos'][0])
-        defect_coord_y = np.append(defect_coord_y, sg.node[d]['pos'][1])
+        defect_coord_x = np.append(defect_coord_x, sg.nodes[d]['pos'][0])
+        defect_coord_y = np.append(defect_coord_y, sg.nodes[d]['pos'][1])
     defect_atom = np.array(defect_atom)
     defect_atom_coord = np.concatenate((defect_coord_x[:, None],
                                         defect_coord_y[:, None],
@@ -331,8 +331,8 @@ def get_angles(sg, dopant):
         for atuple in list(set(tuple(sorted(a)) for a in itertools.product(sg.neighbors(p1), repeat = 2))):
             if atuple[0] != atuple[1]:
                 points = [atuple[0], p1, atuple[1]]
-                u = np.array(sg.node[points[1]]['pos']) - np.array(sg.node[points[0]]['pos'])
-                v = np.array(sg.node[points[1]]['pos']) - np.array(sg.node[points[2]]['pos'])
+                u = np.array(sg.nodes[points[1]]['pos']) - np.array(sg.nodes[points[0]]['pos'])
+                v = np.array(sg.nodes[points[1]]['pos']) - np.array(sg.nodes[points[2]]['pos'])
                 a = np.dot(u, v)
                 b = np.linalg.norm(u) * np.linalg.norm(v)
                 angles = np.append(angles, np.arccos(a/b) * 180 / np.pi)
