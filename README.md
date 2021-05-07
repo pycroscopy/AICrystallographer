@@ -1,6 +1,6 @@
 **The active development of the deep/machine learning routines for the analysis of atom-resolved data will now be at https://github.com/pycroscopy/atomai**
 
-# AICrystallographer
+# AICrystallographer (Archived)
 To aid in the automated analysis of atomically resolved images, we will upload here our deep/machine learning models and 'workflows' (such as AtomNet, DefectNet, SymmetryNet, etc.) with the Jupyter notebooks describing in details how to perform the analysis. Most of the notebooks can be opened and executed in Google Colaboratory, which is a Jupyter notebook environment for machine learning research that requires no setup to use (and also provides free GPU and [TPU](https://colab.research.google.com/notebooks/tpu.ipynb) hardware acceleration).<br><br>
 AI Crystallographer is an active project and we expect to be adding more workflows and pre-trained models in the near future. Currently it includes the following sub-packages:
 <ul>
